@@ -1,14 +1,10 @@
 // src/api/client.ts
 //
-// Este archivo es el "corazón" de validadas y demostradas:
-//  - Una sola instancia de Axios por la que pasan TODAS las llamadas.
-//  - Un registro (log) de cada petición: método, URL, código y tiempo.
-//  - El manejo explícito del 409 (el backend lo devuelve ante cualquier
-//    campo, parámetro o cabecera de más).
-//  - La decisión https directo vs http por proxy /api/.
-//
-// orval usa la función `customAxios` de abajo como "mutator", así que las
-// funciones generadas (crear partida, unirse, votar, etc.) pasan todas por aquí.
+// El "corazón" de validadas y demostradas:
+//  - Una sola instancia de Axios por la que pasan TODAS las llamadas (mutator de orval).
+//  - Registro de cada petición: método, URL, código y tiempo.
+//  - Inyección del token Bearer SOLO en las rutas que lo admiten (regla del 409).
+//  - Manejo explícito del 409 y decisión https-directo / http-por-proxy.
 
 import axios from "axios";
 import type { AxiosError, AxiosRequestConfig } from "axios";
@@ -17,43 +13,49 @@ import { recordCall } from "./callLog";
 // --- Backend elegido en tiempo de ejecución (lo fija la pantalla de config) ---
 let backendBaseUrl = "";
 
-/** Lo llama la pantalla de configuración cuando el usuario elige servidor. */
 export function setBackend(url: string): void {
-  backendBaseUrl = url.trim().replace(/\/+$/, ""); // sin slash final
+  backendBaseUrl = url.trim().replace(/\/+$/, "");
 }
-
 export function getBackend(): string {
   return backendBaseUrl;
 }
 
-/**
- * Decide cómo se alcanza el backend:
- *  - https://  -> directo desde el navegador (el server del profe tiene CORS abierto).
- *  - http://   -> vía /api/ en nuestro Nginx. Una página HTTPS no puede llamar http://
- *                 directo (contenido mixto, el navegador lo bloquea).
- *
- * IMPORTANTE (coordinar con Joel / infra): cómo /api/ sabe a qué backend http
- * reenviar depende de la config de Nginx. Si el profe prueba contra UN backend
- * http fijo, /api/ apunta a ese host y basta. Si hay que soportar http arbitrario,
- * hay que pasarle el destino a Nginx y aplicar la lista blanca anti-SSRF
- * (nada de localhost, IPs privadas ni 169.254.x.x). Dejar esto definido antes
- * de la entrega.
- */
+// --- Token de sesión. Por pestaña (sessionStorage): cada pestaña es un jugador. ---
+let authToken: string | null = sessionStorage.getItem("token");
+
+export function setAuthToken(token: string | null): void {
+  authToken = token;
+  if (token) sessionStorage.setItem("token", token);
+  else sessionStorage.removeItem("token");
+}
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
+// Rutas que NO admiten la cabecera Authorization (el backend la rechaza con 409):
+//   - HEAD /api/salud
+//   - POST /api/partidas                   (crear)
+//   - POST /api/partidas/{id}/jugadores     (unirse)
+// El resto (obtener, iniciar, responder, votar, decidir, avanzar, eliminar) sí.
+function aceptaAuth(method: string, url: string): boolean {
+  const m = (method || "GET").toUpperCase();
+  if (m === "HEAD") return false; // salud
+  if (m === "POST" && /\/api\/partidas\/?$/.test(url)) return false; // crear
+  if (/\/jugadores\/?$/.test(url)) return false; // unirse
+  return true;
+}
+
+// https:// -> directo (CORS abierto). http:// -> vía /api/ en Nginx (contenido mixto).
+// (Coordinar con infra a qué backend http reenvía /api/ y la lista blanca anti-SSRF.)
 function resolveBaseUrl(): string {
   if (backendBaseUrl.startsWith("https://")) return backendBaseUrl;
   if (backendBaseUrl.startsWith("http://")) return "/api";
   return backendBaseUrl;
 }
 
-// Instancia única. OJO: no le ponemos headers por defecto a propósito.
-// Axios ya pone Content-Type: application/json cuando el body es un objeto,
-// que es lo que la API espera; cualquier cabecera extra dispararía un 409.
+// Sin headers por defecto a propósito: cualquier cabecera de más dispara 409.
 const instance = axios.create();
 
-/**
- * Mutator de orval. Firma esperada: (config, options?) => Promise<T>.
- * Registra cada llamada (éxito o error) y devuelve directamente `res.data`.
- */
 export const customAxios = <T>(
   config: AxiosRequestConfig,
   options?: AxiosRequestConfig,
@@ -61,9 +63,19 @@ export const customAxios = <T>(
   const started = performance.now();
   const base = resolveBaseUrl();
   const method = (config.method ?? "get").toUpperCase();
-  const fullUrl = base + (config.url ?? "");
+  const url = config.url ?? "";
+  const fullUrl = base + url;
 
-  return instance({ ...config, ...options, baseURL: base })
+  // Mezcla de cabeceras + inyección condicional del Bearer.
+  const headers: Record<string, unknown> = {
+    ...(config.headers as Record<string, unknown> | undefined),
+    ...(options?.headers as Record<string, unknown> | undefined),
+  };
+  if (authToken && aceptaAuth(method, url)) {
+    headers.Authorization = `Bearer ${authToken}`;
+  }
+
+  return instance({ ...config, ...options, baseURL: base, headers })
     .then((res) => {
       recordCall({
         method,
@@ -75,7 +87,7 @@ export const customAxios = <T>(
       return res.data as T;
     })
     .catch((error: AxiosError) => {
-      const status = error.response?.status ?? 0; // 0 = ni siquiera hubo respuesta
+      const status = error.response?.status ?? 0;
       recordCall({
         method,
         url: fullUrl,
@@ -83,12 +95,9 @@ export const customAxios = <T>(
         ms: Math.round(performance.now() - started),
         ok: false,
       });
-
       if (status === 409) {
-        // El backend rechaza campos/parámetros/cabeceras de más. Lo hacemos visible
-        // para que durante el desarrollo sepamos que enviamos algo que sobra.
         console.warn(
-          "[409] El backend rechazó la petición: algún campo, parámetro o cabecera de más.",
+          "[409] El backend rechazó la petición: campo, parámetro o cabecera de más, o acción fuera de fase.",
           { url: fullUrl },
         );
       }
