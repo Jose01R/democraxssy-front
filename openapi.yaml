@@ -1,0 +1,750 @@
+openapi: 3.1.0
+info:
+  title: Cards for DemocraXSSy API
+  version: 0.1.0
+  summary: API del juego de cartas donde el pueblo vota y el soberano decide.
+  description: |
+    API HTTP de **Cards for DemocraXSSy**, un juego de cartas de humor al estilo
+    *Cards Against Humanity* con una vuelta de tuerca democrática: antes de que
+    **El soberano** elija la respuesta ganadora, el resto de los jugadores vota.
+
+    ## Flujo de una partida
+
+    1. `POST /api/partidas` crea la partida (quien la crea es el anfitrión).
+    2. `POST /api/partidas/{id}/jugadores` para que se unan los demás (4 a 22 en total, número par).
+    3. `POST /api/partidas/{id}/iniciar` reparte las cartas.
+    4. Cada jugador, menos el soberano, envía su respuesta con `PUT …/respuestas`.
+    5. Todos, menos el soberano, votan con `PUT …/votos` (se vale votar por la propia).
+    6. El soberano elige la ganadora con `POST …/decision`, respete o no la votación.
+    7. `POST …/avanzar` pasa a la siguiente ronda (o cierra una fase antes de tiempo).
+
+    ## Autenticación
+
+    Crear o unirse a una partida devuelve un `token` secreto. Las acciones del jugador
+    exigen `Authorization: Bearer <token>`.
+
+    ## Validación de solicitudes
+
+    La API responde **409** ante cabeceras, campos JSON o parámetros de consulta
+    inválidos o inesperados:
+
+    - Ninguna ruta admite parámetros de consulta.
+    - `Authorization` debe ser `Bearer` + 64 caracteres hexadecimales en minúsculas, una sola vez,
+      y no se admite en las rutas públicas.
+    - Con cuerpo, `Content-Type` debe ser `application/json` (opcionalmente `; charset=utf-8`).
+      `HEAD`, `GET` y `DELETE` no admiten ni cuerpo ni `Content-Type`.
+    - Se rechazan `X-HTTP-Method-Override`, `X-HTTP-Method` y `X-Method-Override`.
+    - El cuerpo JSON debe ser un objeto sin campos desconocidos ni repetidos, con todos los
+      obligatorios y del tipo correcto.
+
+    ## CORS
+
+    Todas las respuestas incluyen `Access-Control-Allow-Origin: *`. Las solicitudes `OPTIONS`
+    de verificación previa permiten `GET`, `HEAD`, `POST`, `PUT` y `DELETE` con las cabeceras
+    `Authorization` y `Content-Type`.
+
+    ## Seguridad para clientes
+
+    Nombres, cartas y frases pueden contener los caracteres `<` y `>`, e incluso etiquetas
+    de script (es parte del humor). Muéstralos **siempre como texto plano**, nunca como HTML.
+servers:
+  - url: /
+    description: El mismo servidor que sirve esta documentación
+  - url: http://127.0.0.1:3000
+    description: Servidor local (`spin up`)
+tags:
+  - name: Servicio
+    description: Estado del servicio.
+  - name: Partidas
+    description: Creación, consulta y eliminación de partidas.
+  - name: Jugadores
+    description: Ingreso de jugadores a la sala.
+  - name: Ronda
+    description: Acciones de juego durante una ronda.
+
+paths:
+  /api/salud:
+    # Sin operationId: Swagger UI 5 no puede ejecutar un HEAD que lo tenga.
+    head:
+      tags: [Servicio]
+      summary: Verifica que el servicio esté activo
+      security: []
+      responses:
+        "200":
+          description: El servicio está activo. Sin cuerpo.
+        "409":
+          $ref: "#/components/responses/Conflicto"
+
+  /api/partidas:
+    post:
+      tags: [Partidas]
+      operationId: crearPartida
+      summary: Crea una partida
+      description: Quien crea la partida queda como anfitrión. No admite la cabecera `Authorization`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevaPartida"
+            example:
+              nombre: Ana
+              puntos_para_ganar: 5
+      responses:
+        "201":
+          description: Partida creada. Guarda el `token`; es la única forma de actuar como este jugador.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "400":
+          $ref: "#/components/responses/DatosInvalidos"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "413":
+          $ref: "#/components/responses/DemasiadoGrande"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    get:
+      tags: [Partidas]
+      operationId: obtenerPartida
+      summary: Consulta el estado de la partida
+      description: |
+        Sin token devuelve la vista pública (`yo` es `null`). Con un token válido incluye
+        la mano y el voto del jugador. Un token bien formado pero ajeno a la partida devuelve `401`.
+      security:
+        - {}
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Vista de la partida.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vista"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+    delete:
+      tags: [Partidas]
+      operationId: eliminarPartida
+      summary: Elimina una partida terminada
+      description: Solo el anfitrión, y solo cuando la fase es `terminada`.
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: Partida eliminada. Sin cuerpo.
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/jugadores:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    post:
+      tags: [Jugadores]
+      operationId: unirse
+      summary: Se une a una partida
+      description: |
+        Solo en la fase `sala`, con un máximo de 22 jugadores y nombres únicos
+        (sin distinguir mayúsculas). No admite la cabecera `Authorization`.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevoJugador"
+            example:
+              nombre: Beto
+      responses:
+        "201":
+          description: Jugador inscrito.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Sesion"
+        "400":
+          $ref: "#/components/responses/DatosInvalidos"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "413":
+          $ref: "#/components/responses/DemasiadoGrande"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/iniciar:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    post:
+      tags: [Partidas]
+      operationId: iniciar
+      summary: Inicia la partida
+      description: |
+        Solo el anfitrión, en la fase `sala`, con entre 4 y 22 jugadores en número **par**
+        (incluido el soberano). Reparte 7 cartas a cada jugador y comienza la primera ronda.
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/Vacio"
+      responses:
+        "200":
+          $ref: "#/components/responses/VistaActualizada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/respuestas:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    put:
+      tags: [Ronda]
+      operationId: responder
+      summary: Envía la respuesta del jugador
+      description: |
+        En la fase `respuestas`. El soberano no responde. Debe enviar exactamente
+        `ronda.carta_negra.elegir` cartas de su mano, sin repetir; el orden importa.
+        Cuando todos respondieron, la partida pasa sola a `votacion`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Jugada"
+            example:
+              cartas: [12, 87]
+      responses:
+        "200":
+          $ref: "#/components/responses/VistaActualizada"
+        "400":
+          $ref: "#/components/responses/DatosInvalidos"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "413":
+          $ref: "#/components/responses/DemasiadoGrande"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/votos:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    put:
+      tags: [Ronda]
+      operationId: votar
+      summary: Vota por la respuesta más graciosa
+      description: |
+        En la fase `votacion`. El soberano no vota y cada jugador vota una sola vez.
+        Se permite votar por la propia respuesta. Cuando todos votaron, la partida pasa
+        sola a `decision`.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Eleccion"
+            example:
+              respuesta_id: 0fd7dbdde8a2
+      responses:
+        "200":
+          $ref: "#/components/responses/VistaActualizada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "413":
+          $ref: "#/components/responses/DemasiadoGrande"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/decision:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    post:
+      tags: [Ronda]
+      operationId: decidir
+      summary: El soberano elige la respuesta ganadora
+      description: |
+        En la fase `decision`, solo el soberano. Puede elegir **cualquier** respuesta, sea o no
+        la más votada. El autor gana 1 punto y la partida pasa a `resultado`, o a `terminada`
+        si alcanzó los puntos para ganar. El historial registra si el soberano respetó al pueblo.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Eleccion"
+            example:
+              respuesta_id: 02182ed04a51
+      responses:
+        "200":
+          $ref: "#/components/responses/VistaActualizada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "413":
+          $ref: "#/components/responses/DemasiadoGrande"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+  /api/partidas/{id}/avanzar:
+    parameters:
+      - $ref: "#/components/parameters/PartidaId"
+    post:
+      tags: [Ronda]
+      operationId: avanzar
+      summary: Fuerza el paso a la siguiente fase
+      description: |
+        Solo el anfitrión o el soberano.
+
+        | Fase actual | Efecto |
+        | --- | --- |
+        | `respuestas` | Abre la votación con las respuestas recibidas (mínimo 2). |
+        | `votacion` | Cierra la votación aunque falten votos. |
+        | `resultado` | Rota el soberano y comienza una nueva ronda. |
+        | Otra | `409`. |
+      security:
+        - bearerAuth: []
+      requestBody:
+        $ref: "#/components/requestBodies/Vacio"
+      responses:
+        "200":
+          $ref: "#/components/responses/VistaActualizada"
+        "401":
+          $ref: "#/components/responses/NoAutenticado"
+        "403":
+          $ref: "#/components/responses/Prohibido"
+        "404":
+          $ref: "#/components/responses/NoEncontrado"
+        "409":
+          $ref: "#/components/responses/Conflicto"
+        "500":
+          $ref: "#/components/responses/ErrorInterno"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: 64 caracteres hexadecimales
+      description: Token secreto recibido al crear o unirse a la partida.
+
+  parameters:
+    PartidaId:
+      name: id
+      in: path
+      required: true
+      description: Identificador de la partida.
+      schema:
+        $ref: "#/components/schemas/PartidaId"
+
+  requestBodies:
+    Vacio:
+      required: false
+      description: Cuerpo vacío o `{}`. Cualquier campo se rechaza con `409`.
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties: false
+            maxProperties: 0
+          example: {}
+
+  responses:
+    VistaActualizada:
+      description: Acción aplicada. Devuelve la vista actualizada para el jugador autenticado.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Vista"
+    DatosInvalidos:
+      description: Datos con formato correcto pero valores no válidos para el juego (nombre vacío o muy largo, cantidad de cartas incorrecta…).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: El nombre debe tener entre 1 y 24 caracteres.
+    NoAutenticado:
+      description: Token ausente, o bien formado pero desconocido para la partida.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Token ausente o inválido para esta partida.
+    Prohibido:
+      description: La acción no está permitida para ese jugador (por ejemplo, el soberano intentando votar).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: "El soberano no vota: ya tendrá la última palabra."
+    NoEncontrado:
+      description: La partida, la respuesta o la ruta no existen.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Partida no encontrada.
+    Conflicto:
+      description: |
+        Solicitud con cabeceras, campos JSON o parámetros de consulta inválidos o inesperados,
+        o bien una acción que no corresponde a la fase actual o genera un conflicto
+        (nombre repetido, partida llena, voto duplicado…).
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          examples:
+            campoInesperado:
+              summary: Campo JSON desconocido
+              value:
+                error: "Cuerpo JSON inválido o inesperado: unknown field `admin`, expected `nombre` or `puntos_para_ganar`"
+            consulta:
+              summary: Parámetro de consulta
+              value:
+                error: La API no admite parámetros de consulta.
+            fase:
+              summary: Acción fuera de fase
+              value:
+                error: La votación no está abierta.
+    DemasiadoGrande:
+      description: El cuerpo de la solicitud supera los 4 KB.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: El cuerpo de la solicitud es demasiado grande.
+    ErrorInterno:
+      description: Error interno del servidor.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: Error interno del servidor.
+
+  schemas:
+    PartidaId:
+      type: string
+      pattern: "^[0-9a-f]{32}$"
+      example: 3f9c0d6e0a8b4b1c9e2d7f6a5b4c3d2e
+    JugadorId:
+      type: string
+      pattern: "^[0-9a-f]{16}$"
+      example: a1b2c3d4e5f60718
+    RespuestaId:
+      type: string
+      pattern: "^[0-9a-f]{12}$"
+      example: 0fd7dbdde8a2
+    Nombre:
+      type: string
+      minLength: 1
+      maxLength: 24
+      description: Se recortan los espacios; no admite caracteres de control.
+      example: Ana
+    Fase:
+      type: string
+      enum: [sala, respuestas, votacion, decision, resultado, terminada]
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          description: Mensaje en español.
+
+    NuevaPartida:
+      type: object
+      additionalProperties: false
+      required: [nombre]
+      properties:
+        nombre:
+          $ref: "#/components/schemas/Nombre"
+        puntos_para_ganar:
+          type: [integer, "null"]
+          minimum: 1
+          maximum: 20
+          default: 5
+    NuevoJugador:
+      type: object
+      additionalProperties: false
+      required: [nombre]
+      properties:
+        nombre:
+          $ref: "#/components/schemas/Nombre"
+    Jugada:
+      type: object
+      additionalProperties: false
+      required: [cartas]
+      properties:
+        cartas:
+          type: array
+          description: Identificadores de cartas de `yo.mano`, en el orden en que llenan los espacios.
+          minItems: 1
+          maxItems: 2
+          uniqueItems: true
+          items:
+            type: integer
+            minimum: 0
+    Eleccion:
+      type: object
+      additionalProperties: false
+      required: [respuesta_id]
+      properties:
+        respuesta_id:
+          $ref: "#/components/schemas/RespuestaId"
+
+    Sesion:
+      type: object
+      required: [partida_id, jugador_id, token, partida]
+      properties:
+        partida_id:
+          $ref: "#/components/schemas/PartidaId"
+        jugador_id:
+          $ref: "#/components/schemas/JugadorId"
+        token:
+          type: string
+          pattern: "^[0-9a-f]{64}$"
+          description: "Token secreto del jugador. Envíalo como `Authorization: Bearer <token>`."
+        partida:
+          $ref: "#/components/schemas/Vista"
+
+    Vista:
+      type: object
+      required: [id, fase, anfitrion_id, puntos_para_ganar, jugadores, ronda, yo, historial, ganador_id]
+      properties:
+        id:
+          $ref: "#/components/schemas/PartidaId"
+        fase:
+          $ref: "#/components/schemas/Fase"
+        anfitrion_id:
+          $ref: "#/components/schemas/JugadorId"
+        puntos_para_ganar:
+          type: integer
+          minimum: 1
+          maximum: 20
+        jugadores:
+          type: array
+          items:
+            $ref: "#/components/schemas/JugadorPublico"
+        ronda:
+          description: "`null` en la sala de espera."
+          oneOf:
+            - $ref: "#/components/schemas/Ronda"
+            - type: "null"
+        yo:
+          description: Solo con un token válido.
+          oneOf:
+            - $ref: "#/components/schemas/Yo"
+            - type: "null"
+        historial:
+          type: array
+          items:
+            $ref: "#/components/schemas/ResumenRonda"
+        ganador_id:
+          description: Ganador de la partida cuando la fase es `terminada`.
+          oneOf:
+            - $ref: "#/components/schemas/JugadorId"
+            - type: "null"
+
+    JugadorPublico:
+      type: object
+      required: [id, nombre, puntos, es_anfitrion, es_soberano, ya_respondio, ya_voto]
+      properties:
+        id:
+          $ref: "#/components/schemas/JugadorId"
+        nombre:
+          $ref: "#/components/schemas/Nombre"
+        puntos:
+          type: integer
+          minimum: 0
+        es_anfitrion:
+          type: boolean
+        es_soberano:
+          type: boolean
+        ya_respondio:
+          type: boolean
+        ya_voto:
+          type: boolean
+
+    CartaNegra:
+      type: object
+      required: [texto, elegir]
+      properties:
+        texto:
+          type: string
+          description: Los espacios en blanco se marcan con `____`.
+          example: Esta campaña electoral fue patrocinada por ____.
+        elegir:
+          type: integer
+          minimum: 1
+          maximum: 2
+
+    Ronda:
+      type: object
+      required:
+        - numero
+        - soberano_id
+        - carta_negra
+        - respuestas_recibidas
+        - votos_emitidos
+        - respuestas
+        - favoritas_del_pueblo
+        - ganadora
+      properties:
+        numero:
+          type: integer
+          minimum: 1
+        soberano_id:
+          $ref: "#/components/schemas/JugadorId"
+        carta_negra:
+          $ref: "#/components/schemas/CartaNegra"
+        respuestas_recibidas:
+          type: integer
+          minimum: 0
+        votos_emitidos:
+          type: integer
+          minimum: 0
+        respuestas:
+          type: array
+          description: Vacío durante `respuestas`; se revela barajado y anónimo desde `votacion`.
+          items:
+            $ref: "#/components/schemas/RespuestaRevelada"
+        favoritas_del_pueblo:
+          type: array
+          description: Respuestas más votadas (puede haber empate). Se llena desde `decision`.
+          items:
+            $ref: "#/components/schemas/RespuestaId"
+        ganadora:
+          description: Respuesta elegida por el soberano.
+          oneOf:
+            - $ref: "#/components/schemas/RespuestaId"
+            - type: "null"
+
+    RespuestaRevelada:
+      type: object
+      required: [id, cartas, frase, es_mia]
+      properties:
+        id:
+          $ref: "#/components/schemas/RespuestaId"
+        cartas:
+          type: array
+          items:
+            type: string
+        frase:
+          type: string
+          description: Carta negra completada con las cartas de la respuesta.
+          example: Esta campaña electoral fue patrocinada por un perro callejero como candidato.
+        es_mia:
+          type: boolean
+          description: "`true` si la respuesta es del jugador autenticado."
+        votos:
+          type: integer
+          minimum: 0
+          description: Presente desde la fase `decision`.
+        autor_id:
+          allOf:
+            - $ref: "#/components/schemas/JugadorId"
+          description: Presente desde la fase `resultado`.
+
+    CartaBlanca:
+      type: object
+      required: [id, texto]
+      properties:
+        id:
+          type: integer
+          minimum: 0
+        texto:
+          type: string
+          example: La inflación.
+
+    Yo:
+      type: object
+      required: [id, nombre, mano, mi_voto, puede_avanzar]
+      properties:
+        id:
+          $ref: "#/components/schemas/JugadorId"
+        nombre:
+          $ref: "#/components/schemas/Nombre"
+        mano:
+          type: array
+          maxItems: 7
+          items:
+            $ref: "#/components/schemas/CartaBlanca"
+        mi_voto:
+          oneOf:
+            - $ref: "#/components/schemas/RespuestaId"
+            - type: "null"
+        puede_avanzar:
+          type: boolean
+          description: "`true` si eres el anfitrión o el soberano de la ronda."
+
+    ResumenRonda:
+      type: object
+      required: [numero, soberano_id, ganador_id, frase, respeto_al_pueblo]
+      properties:
+        numero:
+          type: integer
+          minimum: 1
+        soberano_id:
+          $ref: "#/components/schemas/JugadorId"
+        ganador_id:
+          $ref: "#/components/schemas/JugadorId"
+        frase:
+          type: string
+        respeto_al_pueblo:
+          type: boolean
+          description: "`true` si la ganadora estaba entre las favoritas del pueblo (o si nadie votó)."
