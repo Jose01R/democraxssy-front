@@ -36,7 +36,7 @@ src/
   App.tsx                  Router: config -> entrada -> juego
 openapi.yaml               Spec del profesor (fuente para orval)
 orval.config.ts            Config de generación (cliente axios + zod)
-vite.config.ts            Proxy /api de desarrollo (para backends HTTP)
+vite.config.ts            Proxy /api/http de desarrollo (imita al de Nginx)
 ```
 
 ### Decisiones técnicas (para justificar en la defensa)
@@ -47,7 +47,9 @@ vite.config.ts            Proxy /api de desarrollo (para backends HTTP)
   se inyecta **solo** en las rutas que lo admiten; `salud`, `crear` y `unirse`
   nunca lo llevan. La API tampoco admite parámetros de consulta.
 - **Backends HTTP y HTTPS:** `https://` se llama directo (CORS abierto); `http://`
-  pasa por `/api/` en Nginx (si no, el navegador lo bloquea por contenido mixto).
+  pasa por el proxy `/api/http/host:puerto/ruta` de Nginx (si no, el navegador lo
+  bloquea por contenido mixto). El profesor confirmó en clase que el proxy no es
+  obligatorio en esta entrega; se deja implementado porque la segunda lo requiere.
 - **Validación con Zod 4** en el frontend; límites alineados con la API
   (nombre 1-24, puntos 1-20).
 - **XSS:** nombres y cartas se muestran siempre como texto. React escapa solo;
@@ -86,11 +88,11 @@ Máquina de estados de la ronda:
 | Requisito | Estado | Nota |
 | :-- | :-- | :-- |
 | Ejecutar y finalizar una partida completa | 🟡 En progreso | Flujo cableado; falta pulir pantallas y probar de principio a fin |
-| Cambiar de servidor en la GUI (HTTP o HTTPS) | 🟢 Frontend listo | Falta cerrar a qué backend HTTP reenvía `/api/` (infra) |
-| Desplegado en Internet con HTTPS | 🔴 Pendiente | Infra: OCI + Nginx + Certbot |
-| Seleccionar backend + nombre + (contraseña, nombre de juego) | 🟡 Parcial | Se usa backend, nombre y puntos. Sin contraseña ni nombre de juego por confirmación del profesor: **falta guardar ese correo como respaldo** |
+| Cambiar de servidor en la GUI (HTTP o HTTPS) | 🟡 Parcial | Conexión lista (HTTPS directo; HTTP por el proxy `/api/http/` de Nginx). Falta el botón "Cambiar servidor" para volver a la configuración (ver `PENDIENTES_FRONTEND.md`) |
+| Desplegado en Internet con HTTPS | 🟢 Listo | https://democraxssy-if6000.duckdns.org/ (OCI + Nginx + Let's Encrypt). Falta subir el primer build |
+| Seleccionar backend + nombre + (contraseña, nombre de juego) | 🟢 Hecho | Se usa backend, nombre y puntos. Sin contraseña ni nombre de juego: lo confirmó el profesor en clase |
 | Todas las operaciones usadas por el frontend | 🟢 Hecho | Las 10 en el store |
-| Datos validados en el frontend | 🟢 Hecho | Zod en config y en los bodys de la API |
+| Datos validados en el frontend | 🟡 Parcial | Zod en config y en los bodys de la API. Falta validar el ID de partida al unirse (ver `PENDIENTES_FRONTEND.md`) |
 | Todas las llamadas validadas y demostradas | 🟢 Mecanismo listo | Panel de llamadas + interceptor + pestaña Network |
 
 ---
@@ -112,6 +114,8 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
 
 ## 5. Lo que falta
 
+> Lista detallada y priorizada: ver **`PENDIENTES_FRONTEND.md`**.
+
 **Frontend**
 - Pulir las pantallas de juego de la `Ronda` (selección de cartas, mostrar votos,
   resultado y pantalla final) — hoy son un esqueleto funcional.
@@ -122,16 +126,24 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
   el profesor mostró en vivo.** Contrastar el flujo y cada pantalla contra esa
   demo y anotar cualquier comportamiento que falte o difiera.
 
-**Infraestructura (Joel)**
-- Crear la VM en OCI, dominio, Nginx + Certbot, sitio por HTTPS.
-- Configurar el proxy `/api/` y a qué backend HTTP reenvía, con lista blanca
-  anti-SSRF. En el frontend queda el placeholder `CAMBIAR-POR-BACKEND-HTTP`
-  en `vite.config.ts` y la lógica lista en `client.ts`.
-- Script de despliegue (subir el `dist/` de `npm run build`).
-
-**Gestión**
-- Enviar al profesor el correo con la decisión del proxy y la confirmación de
-  que no van contraseña ni nombre de juego. Guardarlo como respaldo.
+**Infraestructura (Joel)** — lista
+- ✅ VM `VM.Standard.E2.1.Micro` (Always Free) en OCI, Oracle Linux 9, IP pública
+  reservada `129.80.16.61`. Se intentó A1.Flex en los tres AD, sin capacidad en
+  la región.
+- ✅ Dominio `democraxssy-if6000.duckdns.org` (el profesor confirmó que se puede
+  usar dominio) y certificados de Let's Encrypt para el dominio y la IP, con
+  renovación automática y recarga de Nginx.
+- ✅ Nginx: redirección HTTP → HTTPS, cabeceras de seguridad (CSP, X-Frame-Options,
+  nosniff, Referrer-Policy, Permissions-Policy) y rutas de React (`try_files`).
+- ✅ Proxy `/api/http/` para backends HTTP, con dos capas anti-SSRF: **lista de
+  destinos prohibidos** en Nginx (localhost, redes privadas, metadatos de OCI,
+  el propio servidor) y regla de **nftables** que impide al usuario `nginx` abrir
+  conexiones a redes privadas aunque un dominio resuelva a ellas. No se usa lista
+  blanca porque el usuario puede elegir cualquier servidor. Además: límite de
+  peticiones por IP y log propio (`/var/log/nginx/proxy.log`).
+- ✅ SELinux en modo enforcing.
+- ✅ Script de despliegue `deploy.ps1` (sube el `dist/` de `npm run build`).
+- Pendiente: primer despliegue del build y prueba de una partida completa.
 
 ---
 
@@ -145,7 +157,8 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
    el health check apareciendo en el panel de llamadas.
 2. (Paolo) Empezar a pulir la pantalla de respuestas.
 3. (José Andrés) Conectar el polling con el manejo de errores 409 por fase.
-4. Enviar el correo al profesor (proxy + confirmación de campos).
+4. ~~Enviar el correo al profesor~~ — resuelto en clase: el proxy no es
+   obligatorio y se puede usar dominio.
 5. Revisar si nuestra solución tiene las mismas funcionalidades que las que el
    profesor mostró en vivo, y anotar diferencias.
 
