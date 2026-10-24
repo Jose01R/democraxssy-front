@@ -140,4 +140,20 @@ Reparto actual: infraestructura/OCI (Joel) · cliente HTTP, store y panel
   `https://129.80.16.61/`).
 
 ---
+
+## Despliegue
+
+El sitio se sirve con Nginx desde una VM de OCI. Para publicar una versión nueva:
+
+```powershell
+npm run build
+powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
+```
+
+El script sube `dist/` a la VM y lo publica en `/var/www/democraxssy`. Necesita
+la llave SSH de la VM (no está en el repo); si no está en la carpeta que
+contiene al repo, pasarla con `-Key "C:\ruta\a\webserver.key"`. No hace falta
+reiniciar Nginx: los archivos nuevos se sirven de inmediato.
+
+---
 *Universidad de Costa Rica · ECCI · IF-6000*

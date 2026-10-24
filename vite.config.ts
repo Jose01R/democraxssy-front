@@ -43,4 +43,10 @@ function proxyHttpDev(): Plugin {
 
 export default defineConfig({
   plugins: [react(), proxyHttpDev()],
+  build: {
+    // Nunca incrustar archivos como data: URIs (Vite lo hace con los pequeños,
+    // como subconjuntos de fuentes). La CSP del servidor no permite data: para
+    // fuentes; así todo se sirve como archivo propio del sitio.
+    assetsInlineLimit: 0,
+  },
 });
