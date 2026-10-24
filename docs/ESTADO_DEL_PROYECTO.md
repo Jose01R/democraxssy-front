@@ -114,6 +114,8 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
 
 ## 5. Lo que falta
 
+> Lista detallada y priorizada: ver **`PENDIENTES_FRONTEND.md`**.
+
 **Frontend**
 - Pulir las pantallas de juego de la `Ronda` (selección de cartas, mostrar votos,
   resultado y pantalla final) — hoy son un esqueleto funcional.
