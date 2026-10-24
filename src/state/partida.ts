@@ -132,11 +132,14 @@ export async function entrar(partidaId: string, nombre: string): Promise<void> {
 }
 
 export async function refrescar(): Promise<void> {
-  if (!estado.partidaId) return;
+  const partidaId = estado.partidaId;
+  if (!partidaId) return;
   try {
-    const v = await obtenerPartida(estado.partidaId);
+    const v = await obtenerPartida(partidaId);
+    if (estado.partidaId !== partidaId) return;
     set({ partida: v, error: null });
   } catch (e) {
+    if (estado.partidaId !== partidaId) return;
     set({ error: mensajeError(e) });
   }
 }

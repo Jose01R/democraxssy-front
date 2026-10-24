@@ -6,7 +6,7 @@
 //  - Inyección del token Bearer SOLO en las rutas que lo admiten (regla del 409).
 //  - Manejo explícito del 409 y decisión https-directo / http-por-proxy.
 
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 import type { AxiosError, AxiosRequestConfig } from "axios";
 import { recordCall } from "./callLog";
 
@@ -71,10 +71,13 @@ export const customAxios = <T>(
   const fullUrl = base + url;
 
   // Mezcla de cabeceras + inyección condicional del Bearer.
-  const headers: Record<string, unknown> = {
-    ...(config.headers as Record<string, unknown> | undefined),
-    ...(options?.headers as Record<string, unknown> | undefined),
-  };
+  const headers = new AxiosHeaders();
+  for (const source of [config.headers, options?.headers]) {
+    if (!source) continue;
+    for (const [name, value] of Object.entries(source)) {
+      if (value !== undefined) headers.set(name, value);
+    }
+  }
   if (authToken && aceptaAuth(method, url)) {
     headers.Authorization = `Bearer ${authToken}`;
   }

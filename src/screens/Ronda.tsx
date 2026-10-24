@@ -22,12 +22,14 @@ import {
 export function Ronda() {
   const { partida, jugadorId, error, cargando } = usePartida();
   const [seleccion, setSeleccion] = useState<number[]>([]);
+  const [estadoCopia, setEstadoCopia] = useState<"idle" | "copiado" | "error">("idle");
 
   if (!partida) return <p>Cargando partida…</p>;
 
-  const { fase, jugadores, ronda, yo, anfitrion_id, ganador_id } = partida;
+  const { fase, jugadores, ronda, yo, anfitrion_id, ganador_id, historial } = partida;
   const soyAnfitrion = jugadorId === anfitrion_id;
   const soySoberano = ronda != null && jugadorId === ronda.soberano_id;
+  
   const nombrePorId = (id: string | null) =>
     jugadores.find((j) => j.id === id)?.nombre ?? "—";
 
@@ -41,67 +43,135 @@ export function Ronda() {
     );
   }
 
+  const copiarId = async () => {
+    try {
+      await navigator.clipboard.writeText(partida.id);
+      setEstadoCopia("copiado");
+      setTimeout(() => setEstadoCopia("idle"), 2500);
+    } catch (err) {
+      console.error("Error al copiar el ID: ", err);
+      setEstadoCopia("error");
+      setTimeout(() => setEstadoCopia("idle"), 3000);
+    }
+  };
+
   return (
     <section>
       {/* Cabecera común: jugadores y puntos */}
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+      <div className="cabecera-jugadores">
         {jugadores.map((j) => (
-          <span key={j.id} style={{ border: "1px solid currentColor", borderRadius: 4, padding: "2px 8px" }}>
+          <span key={j.id} className="jugador-badge">
             {j.nombre} · {j.puntos} pts
             {j.es_soberano ? " 👑" : ""}
             {j.ya_respondio ? " ✓" : ""}
+            {j.ya_voto ? " 🗳️" : ""}
           </span>
         ))}
       </div>
 
-      {error && <p style={{ color: "#b4232a" }}>{error}</p>}
+      {error && <p className="msj-error">{error}</p>}
 
       {/* ===== sala ===== */}
       {fase === "sala" && (
-        <div>
-          <p>Partida <code>{partida.id}</code> — comparte este ID para que se unan.</p>
-          <p>Jugadores: {jugadores.length} (se necesitan mínimo 4 en número par).</p>
-          {soyAnfitrion && (
+        <div className="panel-sala">
+          <h2>Mesa de Espera</h2>
+          
+          <div className="id-box">
+            <div>
+              <span>ID de la Partida</span>
+              <strong>{partida.id}</strong>
+            </div>
+            
+            <div className="copiar-wrapper">
+              {estadoCopia === "copiado" && <span className="msg-exito">¡Copiado!</span>}
+              {estadoCopia === "error" && <span className="msg-error">Fallo al copiar</span>}
+              <button type="button" onClick={copiarId} className="btn-secundario">
+                Copiar ID
+              </button>
+            </div>
+          </div>
+
+          <div style={{ marginBottom: "1.5rem" }}>
+            <p style={{ fontWeight: "bold", margin: "0 0 0.25rem 0" }}>
+              Jugadores en la mesa: {jugadores.length}
+            </p>
+            {jugadores.length < 4 ? (
+              <p className="alerta-falta">
+                Faltan {4 - jugadores.length} jugador(es) para poder iniciar.
+              </p>
+            ) : jugadores.length % 2 !== 0 ? (
+              <p className="alerta-par">
+                Falta 1 jugador (deben ser un número par).
+              </p>
+            ) : (
+              <p className="alerta-ok">
+                ¡Mesa lista para repartir!
+              </p>
+            )}
+          </div>
+
+          {soyAnfitrion ? (
             <button
+              type="button"
+              className="btn-primario btn-ancho"
               onClick={() => void comenzar()}
               disabled={cargando || jugadores.length < 4 || jugadores.length % 2 !== 0}
             >
               Iniciar partida
             </button>
+          ) : (
+            <div className="mensaje-espera">
+              Esperando a que el anfitrión reparta las cartas...
+            </div>
           )}
         </div>
       )}
 
-      {/* ===== carta negra (visible en todas las fases de ronda) ===== */}
+      {/* ===== carta negra ===== */}
       {ronda && fase !== "sala" && fase !== "terminada" && (
-        <blockquote style={{ borderLeft: "3px solid currentColor", paddingLeft: 12 }}>
-          Ronda {ronda.numero} · soberano: {nombrePorId(ronda.soberano_id)}
-          <br />
-          <strong>{ronda.carta_negra.texto}</strong> (elegir {ronda.carta_negra.elegir})
+        <blockquote className="carta-negra">
+          <div className="carta-negra-header">
+            Ronda {ronda.numero} · Soberano actual: <strong>{nombrePorId(ronda.soberano_id)}</strong>
+          </div>
+          <strong className="carta-negra-texto">{ronda.carta_negra.texto}</strong> 
+          <span className="carta-negra-badge">
+            (Elegir {ronda.carta_negra.elegir})
+          </span>
         </blockquote>
       )}
 
       {/* ===== respuestas: elegir cartas de la mano ===== */}
       {fase === "respuestas" && ronda && (
         soySoberano ? (
-          <p>Eres el soberano: espera a que respondan ({ronda.respuestas_recibidas} recibidas).</p>
+          <div className="panel-resultado" style={{ textAlign: "center" }}>
+            <p>Eres el soberano de esta ronda.</p>
+            <h3>Espera a que la mesa responda ({ronda.respuestas_recibidas} recibidas).</h3>
+          </div>
         ) : (
           <div>
-            <p>Elige {ronda.carta_negra.elegir} carta(s) de tu mano:</p>
-            <div style={{ display: "grid", gap: 6 }}>
-              {yo?.mano.map((c) => (
-                <label key={c.id} style={{ display: "flex", gap: 8 }}>
-                  <input
-                    type="checkbox"
-                    checked={seleccion.includes(c.id)}
-                    onChange={() => toggleCarta(c.id, ronda.carta_negra.elegir)}
-                  />
-                  {c.texto}
-                </label>
-              ))}
+            <p style={{ fontWeight: "bold" }}>Elige {ronda.carta_negra.elegir} carta(s) de tu mano:</p>
+            
+            <div className="mano-cartas">
+              {yo?.mano.map((c) => {
+                const seleccionada = seleccion.includes(c.id);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={seleccionada}
+                    onClick={() => toggleCarta(c.id, ronda.carta_negra.elegir)}
+                    className="carta-blanca"
+                  >
+                    <span className="carta-texto">{c.texto}</span>
+                    <span className="carta-footer">DEMOCRAXSSY</span>
+                  </button>
+                );
+              })}
             </div>
+
             <button
-              style={{ marginTop: 8 }}
+              type="button"
+              className="btn-primario"
               disabled={cargando || seleccion.length !== ronda.carta_negra.elegir}
               onClick={() => {
                 void enviarRespuesta(seleccion);
@@ -117,13 +187,17 @@ export function Ronda() {
       {/* ===== votacion: votar una respuesta ajena ===== */}
       {fase === "votacion" && ronda && (
         <div>
-          <p>{soySoberano ? "Espera a que el pueblo vote." : "Vota tu favorita:"}</p>
-          <div style={{ display: "grid", gap: 6 }}>
+          <p style={{ fontWeight: "bold" }}>
+            {soySoberano ? "Espera a que el pueblo vote las opciones." : "Vota por tu respuesta favorita:"}
+          </p>
+          <div className="lista-respuestas">
             {ronda.respuestas.map((r) => (
-              <div key={r.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ flex: 1 }}>{r.frase}</span>
+              <div key={r.id} className="respuesta-row">
+                <span className="respuesta-texto">{r.frase}</span>
                 {!soySoberano && !r.es_mia && (
                   <button
+                    type="button"
+                    className="btn-votar"
                     disabled={cargando || yo?.mi_voto === r.id}
                     onClick={() => void emitirVoto(r.id)}
                   >
@@ -139,15 +213,24 @@ export function Ronda() {
       {/* ===== decision: el soberano elige la ganadora ===== */}
       {fase === "decision" && ronda && (
         <div>
-          <p>{soySoberano ? "Elige la respuesta ganadora:" : "El soberano está decidiendo…"}</p>
-          <div style={{ display: "grid", gap: 6 }}>
+          <p style={{ fontWeight: "bold" }}>
+            {soySoberano ? "Elige la respuesta ganadora de esta ronda:" : "El soberano está decidiendo…"}
+          </p>
+          <div className="lista-respuestas">
             {ronda.respuestas.map((r) => (
-              <div key={r.id} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                <span style={{ flex: 1 }}>{r.frase}</span>
-                <span>{r.votos ?? 0} votos</span>
+              <div key={r.id} className="respuesta-row">
+                <span className="respuesta-texto">{r.frase}</span>
+                <span className="votos-badge">
+                  {r.votos ?? 0} votos
+                </span>
                 {soySoberano && (
-                  <button disabled={cargando} onClick={() => void elegirGanadora(r.id)}>
-                    Elegir
+                  <button 
+                    type="button"
+                    className="btn-elegir"
+                    disabled={cargando} 
+                    onClick={() => void elegirGanadora(r.id)}
+                  >
+                    Elegir Ganadora
                   </button>
                 )}
               </div>
@@ -156,31 +239,83 @@ export function Ronda() {
         </div>
       )}
 
-      {/* ===== resultado: ganadora de la ronda + avanzar ===== */}
+      {/* ===== resultado ===== */}
+      {/* ===== resultado ===== */}
       {fase === "resultado" && ronda && (
-        <div>
+        <div className="panel-resultado">
           {(() => {
             const g = ronda.respuestas.find((r) => r.id === ronda.ganadora);
+            
+            // Corrección: usamos h.numero en lugar de h.ronda
+            const historialRonda = historial?.find((h) => h.numero === ronda.numero);
+            const respetoAlPueblo = historialRonda?.respeto_al_pueblo;
+
             return g ? (
-              <p>Ganó: <strong>{g.frase}</strong> — de {nombrePorId(g.autor_id ?? null)}</p>
+              <div>
+                <p style={{ fontSize: "1.2rem", margin: "0 0 0.5rem 0" }}>Ganó: <strong>{g.frase}</strong></p>
+                <p style={{ color: "#67574b", margin: 0 }}>— Autor: {nombrePorId(g.autor_id ?? null)}</p>
+                
+                {respetoAlPueblo !== undefined && (
+                  <div className={`respeto-box ${respetoAlPueblo ? 'si' : 'no'}`}>
+                    <strong style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      {respetoAlPueblo ? "👑🤝 El Soberano escuchó al pueblo" : "👑📉 El Soberano ignoró al pueblo"}
+                    </strong>
+                    <p style={{ margin: "4px 0 0 0", fontSize: "0.9rem" }}>
+                      {respetoAlPueblo 
+                        ? "La respuesta ganadora fue también la más votada por la mesa." 
+                        : "El Soberano eligió a su propio criterio ignorando la mayoría de votos."}
+                    </p>
+                  </div>
+                )}
+              </div>
             ) : (
               <p>Ronda resuelta.</p>
             );
           })()}
+          
           {yo?.puede_avanzar && (
-            <button disabled={cargando} onClick={() => void avanzarRonda()}>
-              Siguiente ronda
-            </button>
+            <div style={{ marginTop: "1.5rem" }}>
+              <button 
+                type="button"
+                className="btn-primario"
+                disabled={cargando} 
+                onClick={() => void avanzarRonda()}
+              >
+                Siguiente ronda
+              </button>
+            </div>
           )}
         </div>
       )}
 
-      {/* ===== terminada: ganador de la partida ===== */}
+      {/* ===== terminada ===== */}
       {fase === "terminada" && (
-        <div>
-          <h2>Ganó {nombrePorId(ganador_id)} 🎉</h2>
+        <div className="panel-terminada">
+          <h2 style={{ fontSize: "2rem", margin: "0 0 1rem 0", color: "#231a14" }}>
+            🏆 ¡Ganó {nombrePorId(ganador_id)}!
+          </h2>
+          
+          <div className="tabla-posiciones">
+            <h3 style={{ marginTop: 0, borderBottom: "2px solid #ece4da", paddingBottom: "0.5rem", color: "#4d3d32" }}>
+              Clasificación Final
+            </h3>
+            <ul>
+              {[...jugadores].sort((a, b) => b.puntos - a.puntos).map((j, index) => (
+                <li key={j.id}>
+                  <span>{index + 1}. {j.nombre} {index === 0 && "🥇"}</span>
+                  <span>{j.puntos} pts</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
           {soyAnfitrion && (
-            <button disabled={cargando} onClick={() => void eliminar()}>
+            <button 
+              type="button"
+              className="btn-peligro"
+              disabled={cargando} 
+              onClick={() => void eliminar()}
+            >
               Eliminar partida
             </button>
           )}
