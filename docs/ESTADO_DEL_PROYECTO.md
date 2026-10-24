@@ -88,11 +88,11 @@ Máquina de estados de la ronda:
 | Requisito | Estado | Nota |
 | :-- | :-- | :-- |
 | Ejecutar y finalizar una partida completa | 🟡 En progreso | Flujo cableado; falta pulir pantallas y probar de principio a fin |
-| Cambiar de servidor en la GUI (HTTP o HTTPS) | 🟢 Listo | HTTPS directo; HTTP por el proxy `/api/http/` de Nginx |
+| Cambiar de servidor en la GUI (HTTP o HTTPS) | 🟡 Parcial | Conexión lista (HTTPS directo; HTTP por el proxy `/api/http/` de Nginx). Falta el botón "Cambiar servidor" para volver a la configuración (ver `PENDIENTES_FRONTEND.md`) |
 | Desplegado en Internet con HTTPS | 🟢 Listo | https://democraxssy-if6000.duckdns.org/ (OCI + Nginx + Let's Encrypt). Falta subir el primer build |
 | Seleccionar backend + nombre + (contraseña, nombre de juego) | 🟢 Hecho | Se usa backend, nombre y puntos. Sin contraseña ni nombre de juego: lo confirmó el profesor en clase |
 | Todas las operaciones usadas por el frontend | 🟢 Hecho | Las 10 en el store |
-| Datos validados en el frontend | 🟢 Hecho | Zod en config y en los bodys de la API |
+| Datos validados en el frontend | 🟡 Parcial | Zod en config y en los bodys de la API. Falta validar el ID de partida al unirse (ver `PENDIENTES_FRONTEND.md`) |
 | Todas las llamadas validadas y demostradas | 🟢 Mecanismo listo | Panel de llamadas + interceptor + pestaña Network |
 
 ---
