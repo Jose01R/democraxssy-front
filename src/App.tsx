@@ -8,42 +8,15 @@
 import { useEffect, useState } from "react";
 import { Configuracion } from "./screens/Configuracion";
 import { Ronda } from "./screens/Ronda";
+import { Entrada } from "./screens/Entrada";
 import { CallPanel } from "./components/CallPanel";
 import type { ConfigForm } from "./schemas/config";
 import {
   usePartida,
   probarSalud,
-  crear,
-  entrar,
   iniciarPolling,
   detenerPolling,
 } from "./state/partida";
-
-function Entrada({ cfg }: { cfg: ConfigForm }) {
-  const { cargando, error } = usePartida();
-  const [idUnirse, setIdUnirse] = useState("");
-
-  return (
-    <section style={{ display: "grid", gap: 16, maxWidth: 420 }}>
-      <div>
-        <button disabled={cargando} onClick={() => void crear(cfg.playerName, cfg.pointsToWin)}>
-          Crear partida nueva
-        </button>
-      </div>
-      <div style={{ display: "flex", gap: 8 }}>
-        <input
-          placeholder="ID de partida para unirse"
-          value={idUnirse}
-          onChange={(e) => setIdUnirse(e.target.value)}
-        />
-        <button disabled={cargando || !idUnirse} onClick={() => void entrar(idUnirse.trim(), cfg.playerName)}>
-          Unirse
-        </button>
-      </div>
-      {error && <p style={{ color: "#b4232a" }}>{error}</p>}
-    </section>
-  );
-}
 
 export default function App() {
   const { partida, partidaId } = usePartida();
@@ -64,7 +37,8 @@ export default function App() {
       {partida ? (
         <Ronda />
       ) : cfg ? (
-        <Entrada cfg={cfg} />
+        /* Se pasa la prop onBack para permitir limpiar el estado de configuración y volver atrás */
+        <Entrada cfg={cfg} onBack={() => setCfg(null)} />
       ) : (
         <Configuracion
           onReady={(data) => {
