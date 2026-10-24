@@ -133,9 +133,11 @@ Reparto actual: infraestructura/OCI (Joel) · cliente HTTP, store y panel
 
 - Un backend `https://` se llama **directo** desde el navegador (CORS abierto).
 - Un backend `http://` no se puede llamar desde una página HTTPS (contenido
-  mixto), así que pasa por `/api/`, que en producción reenvía Nginx y en
-  desarrollo reenvía Vite. Ajustar el destino en `vite.config.ts`
-  (placeholder `CAMBIAR-POR-BACKEND-HTTP`) cuando se defina con infraestructura.
+  mixto), así que pasa por el proxy: `http://host:puerto/ruta` se llama como
+  `/api/http/host:puerto/ruta`. En producción lo reenvía Nginx y en desarrollo
+  lo reenvía Vite (`vite.config.ts`); el destino sale de la propia URL.
+- Sitio desplegado: **https://democraxssy-if6000.duckdns.org/** (respaldo:
+  `https://129.80.16.61/`).
 
 ---
 *Universidad de Costa Rica · ECCI · IF-6000*
