@@ -11,9 +11,9 @@ para apoyar la defensa (cada decisión queda justificada).
 
 ## 1. Qué hay en el repositorio
 
-Proyecto **React + TypeScript + Vite**, con ESLint. La base del frontend está
-completa; el juego está cableado de punta a punta y las pantallas de juego son
-un esqueleto funcional listo para pulir.
+Proyecto **React + TypeScript + Vite**, con ESLint. La interfaz y las pantallas
+principales están implementadas; queda validar el flujo completo con varios
+jugadores y contrastarlo con la demo del profesor.
 
 ### Estructura
 
@@ -32,6 +32,7 @@ src/
     CallPanel.tsx          Panel visible con cada llamada (método, URL, código, ms)
   screens/
     Configuracion.tsx      Formulario: servidor, nombre, puntos para ganar
+    Entrada.tsx            Crear una partida o unirse con su ID
     Ronda.tsx              Pantalla de juego (cambia según la fase)
   App.tsx                  Router: config -> entrada -> juego
 openapi.yaml               Spec del profesor (fuente para orval)
@@ -52,8 +53,14 @@ vite.config.ts            Proxy /api/http de desarrollo (imita al de Nginx)
   obligatorio en esta entrega; se deja implementado porque la segunda lo requiere.
 - **Validación con Zod 4** en el frontend; límites alineados con la API
   (nombre 1-24, puntos 1-20).
+- **Health check:** antes de entrar a la sala, el endpoint debe responder HTTP
+  200. La interfaz indica "Sin conectar" hasta completar esta verificación.
+- **Errores 409:** se muestran mensajes orientados a la acción y fase del juego;
+  se recuerda revisar también el contrato de la API.
 - **XSS:** nombres y cartas se muestran siempre como texto. React escapa solo;
   no se usa `dangerouslySetInnerHTML` en ningún lado.
+- **CSP:** fuentes e íconos se sirven desde npm local; no hay imports de Google
+  Fonts ni recursos de fuentes externos.
 - **Sesión por pestaña** (`sessionStorage`): cada pestaña es un jugador distinto,
   necesario para probar con el mínimo de 4 jugadores.
 - **Cliente generado con orval** desde el Swagger: las 10 operaciones y sus
@@ -67,7 +74,7 @@ Las 10 están disponibles en el store (`src/state/partida.ts`).
 
 | Operación | Dónde se dispara | Estado |
 | :-- | :-- | :-- |
-| headApiSalud | App (al elegir servidor) | Cableada |
+| headApiSalud | App (al continuar desde configuración) | Cableada; requiere HTTP 200 |
 | crearPartida | Entrada | Cableada |
 | unirse | Entrada | Cableada |
 | obtenerPartida | Polling del store | Cableada |
@@ -117,11 +124,11 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
 > Lista detallada y priorizada: ver **`PENDIENTES_FRONTEND.md`**.
 
 **Frontend**
-- Pulir las pantallas de juego de la `Ronda` (selección de cartas, mostrar votos,
-  resultado y pantalla final) — hoy son un esqueleto funcional.
-- Manejo fino de errores por fase (mensajes del 409 "acción fuera de fase").
-- Demostrar el XSS: probar con nombres y cartas que traigan `<script>`.
-- Pruebas en varios navegadores y del mínimo de 4 jugadores en número par.
+- Completar una partida con 4 pestañas (número par), desde la sala hasta la
+  pantalla final, y revisar las pantallas de juego en celular.
+- Demostrar el XSS: probar con un nombre como `<script>alert(1)</script>` y
+  confirmar que se muestra como texto.
+- Probar en producción después de cada despliegue.
 - **Verificar que nuestra solución tenga las mismas funcionalidades que las que
   el profesor mostró en vivo.** Contrastar el flujo y cada pantalla contra esa
   demo y anotar cualquier comportamiento que falte o difiera.
@@ -143,24 +150,22 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
   peticiones por IP y log propio (`/var/log/nginx/proxy.log`).
 - ✅ SELinux en modo enforcing.
 - ✅ Script de despliegue `deploy.ps1` (sube el `dist/` de `npm run build`).
-- Pendiente: primer despliegue del build y prueba de una partida completa.
+- ✅ Primera versión desplegada el 24 de octubre; el health check contra el
+  backend responde 200. Validar de nuevo después de cada despliegue.
 
 ---
 
-## 6. Tareas para mañana
+## 6. Pendientes actuales
 
 > ✅ **Resuelto:** pantalla en blanco. `src/api/client.ts` había quedado en la
 > versión vieja (sin `setAuthToken`); se reemplazó por la que exporta
 > `setAuthToken`/`getAuthToken`. La app ya carga sin error.
 
-1. Correr `npm run dev` y confirmar el flujo completo hasta la fase `sala`, con
-   el health check apareciendo en el panel de llamadas.
-2. (Paolo) Empezar a pulir la pantalla de respuestas.
-3. (José Andrés) Conectar el polling con el manejo de errores 409 por fase.
-4. ~~Enviar el correo al profesor~~ — resuelto en clase: el proxy no es
-   obligatorio y se puede usar dominio.
-5. Revisar si nuestra solución tiene las mismas funcionalidades que las que el
-   profesor mostró en vivo, y anotar diferencias.
+1. Completar una partida con cuatro pestañas y validar la experiencia móvil.
+2. Confirmar visualmente en el navegador que un nombre `<script>alert(1)</script>`
+   se representa como texto y no se ejecuta.
+3. Comparar el flujo completo y las pantallas contra la demo del profesor.
+4. Verificar el sitio de producción después del siguiente despliegue.
 
 ---
 *Universidad de Costa Rica · ECCI · IF-6000*

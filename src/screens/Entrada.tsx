@@ -3,9 +3,11 @@
 import { useState } from "react";
 import type { ConfigForm } from "../schemas/config";
 import { usePartida, crear, entrar } from "../state/partida";
+import type { ConnectionStatus } from "./Configuracion";
 
 type Props = {
   cfg: ConfigForm;
+  connectionStatus: ConnectionStatus;
   onBack: () => void;
 };
 
@@ -13,7 +15,7 @@ function registrarError(error: unknown) {
   console.error("No se pudo completar la acción de partida:", error);
 }
 
-export function Entrada({ cfg, onBack }: Props) {
+export function Entrada({ cfg, connectionStatus, onBack }: Props) {
   const { cargando, error } = usePartida();
   const [idUnirse, setIdUnirse] = useState("");
 
@@ -94,6 +96,24 @@ export function Entrada({ cfg, onBack }: Props) {
                 person
               </span>
               <span>Jugador: {cfg.playerName || "Anónimo"}</span>
+            </div>
+            <div
+              className={`mono-text connection-status${connectionStatus === "verified" ? " is-verified" : ""}`}
+            >
+              <span className="material-symbols-outlined connection-status-icon" aria-hidden="true">
+                {connectionStatus === "verified"
+                  ? "verified"
+                  : connectionStatus === "checking"
+                    ? "progress_activity"
+                    : "cloud_off"}
+              </span>
+              <span>
+                {connectionStatus === "verified"
+                  ? "Conexión verificada · HTTP 200"
+                  : connectionStatus === "checking"
+                    ? "Verificando conexión"
+                    : "Sin conectar"}
+              </span>
             </div>
           </div>
         </div>

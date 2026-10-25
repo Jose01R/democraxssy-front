@@ -6,7 +6,7 @@
 // El panel de llamadas va siempre visible abajo.
 
 import { useEffect, useState } from "react";
-import { Configuracion } from "./screens/Configuracion";
+import { Configuracion, type ConnectionStatus } from "./screens/Configuracion";
 import { Ronda } from "./screens/Ronda";
 import { Entrada } from "./screens/Entrada";
 import { CallPanel } from "./components/CallPanel";
@@ -21,6 +21,9 @@ import {
 export default function App() {
   const { partida, partidaId } = usePartida();
   const [cfg, setCfg] = useState<ConfigForm | null>(null);
+  const [connectionStatus, setConnectionStatus] =
+    useState<ConnectionStatus>("disconnected");
+  const [healthError, setHealthError] = useState<string | null>(null);
 
   // Polling mientras haya una partida activa.
   useEffect(() => {
@@ -31,24 +34,48 @@ export default function App() {
   }, [partidaId]);
 
   return (
-    <main style={{ maxWidth: 820, margin: "0 auto", padding: "1.5rem" }}>
-      <h1>Cards for democraXSSy</h1>
-
+    <main className="app-shell">
       {partida ? (
         <Ronda />
       ) : cfg ? (
         /* Se pasa la prop onBack para permitir limpiar el estado de configuración y volver atrás */
-        <Entrada cfg={cfg} onBack={() => setCfg(null)} />
+        <Entrada
+          cfg={cfg}
+          connectionStatus={connectionStatus}
+          onBack={() => {
+            setCfg(null);
+            setConnectionStatus("disconnected");
+            setHealthError(null);
+          }}
+        />
       ) : (
         <Configuracion
+          connectionStatus={connectionStatus}
+          healthError={healthError}
+          onBackendChange={() => {
+            setConnectionStatus("disconnected");
+            setHealthError(null);
+          }}
           onReady={(data) => {
-            setCfg(data);
-            void probarSalud(); // health check: primera fila en el panel
+            setConnectionStatus("checking");
+            setHealthError(null);
+            return probarSalud()
+              .then(() => {
+                setConnectionStatus("verified");
+                setCfg(data);
+              })
+              .catch((error: unknown) => {
+                console.error("No se pudo verificar la conexión con el backend:", error);
+                setConnectionStatus("disconnected");
+                setHealthError(
+                  "No se pudo verificar el servidor. Comprueba la URL y que el health check responda HTTP 200.",
+                );
+              });
           }}
         />
       )}
 
-      <hr style={{ margin: "1.5rem 0", opacity: 0.3 }} />
+      <hr className="app-divider" />
       <CallPanel />
     </main>
   );

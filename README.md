@@ -72,7 +72,8 @@ Abrí la URL que imprime (por defecto `http://localhost:5173`).
 
 1. En la pantalla de configuración, elegí el **servidor** del backend, tu
    **nombre** y los **puntos para ganar**. Al continuar se hace un *health check*
-   que aparece en el panel de llamadas (abajo).
+   que aparece en el panel de llamadas (abajo); solo se avanza si responde HTTP
+   200.
 2. **Crear partida nueva** (quedás como anfitrión) o **Unirse** con el ID de una
    partida existente.
 3. Hacen falta **4 jugadores en número par** para iniciar. Para probar solo,
@@ -99,6 +100,7 @@ src/
     CallPanel.tsx    Panel visible con cada llamada (método, URL, código, ms)
   screens/
     Configuracion.tsx
+    Entrada.tsx      Crear una partida o unirse con su ID
     Ronda.tsx        Pantalla de juego (cambia según la fase)
   App.tsx            Router: config -> entrada -> juego
 openapi.yaml         Spec del backend (fuente de orval)
@@ -120,6 +122,8 @@ vite.config.ts       Incluye el proxy /api de desarrollo
   Bearer ya se inyecta solo donde corresponde.
 - **XSS:** nombres y cartas se muestran siempre como texto con `{}` (React escapa
   solo). **Nunca** usar `dangerouslySetInnerHTML`.
+- Las fuentes Plus Jakarta Sans, Outfit y Material Symbols se sirven desde
+  paquetes npm locales; no se cargan fuentes ni íconos desde CDN.
 - **Ramas:** trabajar en ramas por tarea (p. ej. `feat/pantallas-juego`) y hacer
   merge; no empujar directo a `main`.
 - `node_modules/` y `dist/` no se suben (ya están en `.gitignore`).
