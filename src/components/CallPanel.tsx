@@ -38,7 +38,7 @@ export function CallPanel() {
         }}
       >
         <strong>Llamadas ({calls.length})</strong>
-        <button type="button" onClick={clearCalls} style={{ fontSize: 12 }}>
+        <button type="button" onClick={clearCalls} className="btn-secundario" style={{ fontSize: 12 }}>
           Limpiar
         </button>
       </header>
