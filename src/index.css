@@ -1,3 +1,7 @@
+/* Fuentes e íconos: se instalan con npm y se importan en main.tsx para que
+   queden dentro del build. No usar Google Fonts por URL: la CSP del servidor
+   solo permite recursos del propio sitio. */
+
 :root {
   --bg-dark: #19120d;
   --bg-card: #f5efeb;

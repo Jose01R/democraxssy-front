@@ -44,11 +44,15 @@ function aceptaAuth(method: string, url: string): boolean {
   return true;
 }
 
-// https:// -> directo (CORS abierto). http:// -> vía /api/ en Nginx (contenido mixto).
-// (Coordinar con infra a qué backend http reenvía /api/ y la lista blanca anti-SSRF.)
+// https:// -> directo (CORS abierto). http:// -> vía el proxy de Nginx (contenido mixto).
+// Formato del proxy: http://host:puerto/ruta -> /api/http/host:puerto/ruta
+// (las rutas de la API ya empiezan con /api/, p. ej. /api/http/host/api/salud).
 function resolveBaseUrl(): string {
   if (backendBaseUrl.startsWith("https://")) return backendBaseUrl;
-  if (backendBaseUrl.startsWith("http://")) return "/api";
+  if (backendBaseUrl.startsWith("http://")) {
+    const u = new URL(backendBaseUrl);
+    return `/api/http/${u.host}${u.pathname.replace(/\/+$/, "")}`;
+  }
   return backendBaseUrl;
 }
 
