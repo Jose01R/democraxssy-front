@@ -8,7 +8,7 @@
 // compatible con useSyncExternalStore.
 
 import { useSyncExternalStore } from "react";
-import type { AxiosError } from "axios";
+import axios from "axios";
 import { setAuthToken } from "../api/client";
 import {
   headApiSalud,
@@ -67,9 +67,20 @@ export function usePartida(): Estado {
   return useSyncExternalStore(subscribe, getEstado);
 }
 
-function mensajeError(e: unknown): string {
-  const err = e as AxiosError<{ error?: string }>;
-  return err.response?.data?.error ?? "No se pudo conectar con el servidor.";
+function mensajeError(e: unknown, guia409?: string): string {
+  if (axios.isAxiosError<{ error?: string }>(e)) {
+    if (e.response?.status === 409) {
+      const guia =
+        guia409 ??
+        "Verifica que la acción corresponda a la fase actual de la partida y que la solicitud respete el contrato de la API.";
+      return `El servidor rechazó la acción (409). ${guia}`;
+    }
+    return (
+      e.response?.data?.error ??
+      "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo."
+    );
+  }
+  return "Ocurrió un error inesperado al comunicarse con el servidor.";
 }
 
 function guardarSesion(s: Sesion) {
@@ -85,13 +96,13 @@ function guardarSesion(s: Sesion) {
 }
 
 /** Envuelve una acción que devuelve la Vista actualizada, manejando carga y error. */
-async function accion(fn: () => Promise<Vista>) {
+async function accion(fn: () => Promise<Vista>, guia409?: string) {
   set({ cargando: true, error: null });
   try {
     const v = await fn();
     set({ partida: v });
   } catch (e) {
-    set({ error: mensajeError(e) });
+    set({ error: mensajeError(e, guia409) });
     throw e;
   } finally {
     set({ cargando: false });
@@ -147,34 +158,59 @@ export async function refrescar(): Promise<void> {
 /** Solo el anfitrión, en fase sala, con >=4 jugadores en número par. Body vacío. */
 export async function comenzar(): Promise<void> {
   if (!estado.partidaId) return;
-  await accion(() => iniciar(estado.partidaId as string, {}));
+  await accion(
+    () => iniciar(estado.partidaId as string, {}),
+    "La partida solo puede iniciar desde la sala con al menos 4 jugadores y un número par.",
+  );
 }
 
 export async function enviarRespuesta(cartas: number[]): Promise<void> {
   if (!estado.partidaId) return;
-  await accion(() => responder(estado.partidaId as string, { cartas }));
+  await accion(
+    () => responder(estado.partidaId as string, { cartas }),
+    "Todavía no es tu turno para responder o la fase de respuestas aún no está abierta.",
+  );
 }
 
 export async function emitirVoto(respuestaId: string): Promise<void> {
   if (!estado.partidaId) return;
-  await accion(() => votar(estado.partidaId as string, { respuesta_id: respuestaId }));
+  await accion(
+    () => votar(estado.partidaId as string, { respuesta_id: respuestaId }),
+    "La votación aún no está abierta o ya registraste tu voto.",
+  );
 }
 
 export async function elegirGanadora(respuestaId: string): Promise<void> {
   if (!estado.partidaId) return;
-  await accion(() => decidir(estado.partidaId as string, { respuesta_id: respuestaId }));
+  await accion(
+    () => decidir(estado.partidaId as string, { respuesta_id: respuestaId }),
+    "Todavía no es tu turno para elegir la respuesta ganadora; solo el soberano decide en esta fase.",
+  );
 }
 
 /** Pasa a la siguiente fase/ronda. Body vacío. */
 export async function avanzarRonda(): Promise<void> {
   if (!estado.partidaId) return;
-  await accion(() => avanzar(estado.partidaId as string, {}));
+  await accion(
+    () => avanzar(estado.partidaId as string, {}),
+    "La ronda aún no está lista para avanzar o esta acción no te corresponde.",
+  );
 }
 
 export async function eliminar(): Promise<void> {
   if (!estado.partidaId) return;
-  await eliminarPartida(estado.partidaId);
-  limpiarSesion();
+  try {
+    await eliminarPartida(estado.partidaId);
+    limpiarSesion();
+  } catch (e) {
+    set({
+      error: mensajeError(
+        e,
+        "Solo el anfitrión puede eliminar la partida cuando ya terminó.",
+      ),
+    });
+    throw e;
+  }
 }
 
 export function limpiarSesion(): void {

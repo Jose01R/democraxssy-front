@@ -7,12 +7,15 @@
 import { useSyncExternalStore } from "react";
 import { subscribe, getCalls, clearCalls, type CallRecord } from "../api/callLog";
 
-function statusColor(c: CallRecord): string {
-  if (c.status === 0) return "#b4232a"; // sin respuesta (red/CORS)
-  if (c.status >= 500) return "#b4232a";
-  if (c.status === 409) return "#b06a00"; // el 409 que nos interesa vigilar
-  if (c.status >= 400) return "#b06a00";
-  return "#1f7a3d"; // 2xx/3xx
+function statusClass(c: CallRecord): string {
+  if (c.status === 0 || c.status >= 500) return "call-status-error";
+  if (
+    c.status >= 400 ||
+    (c.method === "HEAD" && c.url.endsWith("/api/salud") && c.status !== 200)
+  ) {
+    return "call-status-warning";
+  }
+  return "call-status-success";
 }
 
 export function CallPanel() {
@@ -21,61 +24,42 @@ export function CallPanel() {
   return (
     <section
       aria-label="Registro de llamadas"
-      style={{
-        border: "1px solid currentColor",
-        borderRadius: 6,
-        padding: "0.5rem 0.75rem",
-        fontSize: 13,
-        opacity: 0.95,
-      }}
+      className="call-panel"
     >
-      <header
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 6,
-        }}
-      >
+      <header className="call-panel-header">
         <strong>Llamadas ({calls.length})</strong>
-        <button type="button" onClick={clearCalls} style={{ fontSize: 12 }}>
+        <button type="button" onClick={clearCalls} className="btn-secundario call-panel-clear">
           Limpiar
         </button>
       </header>
 
       {calls.length === 0 ? (
-        <p style={{ margin: 0, opacity: 0.6 }}>Aún no se han hecho llamadas.</p>
+        <p className="call-panel-empty">Aún no se han hecho llamadas.</p>
       ) : (
-        <table
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-          }}
-        >
-          <thead>
-            <tr style={{ textAlign: "left", opacity: 0.7 }}>
-              <th style={{ padding: "2px 6px" }}>Hora</th>
-              <th style={{ padding: "2px 6px" }}>Método</th>
-              <th style={{ padding: "2px 6px" }}>Código</th>
-              <th style={{ padding: "2px 6px" }}>ms</th>
-              <th style={{ padding: "2px 6px" }}>URL</th>
-            </tr>
-          </thead>
-          <tbody>
-            {calls.map((c) => (
-              <tr key={c.id} style={{ borderTop: "1px solid rgba(128,128,128,0.3)" }}>
-                <td style={{ padding: "2px 6px" }}>{c.at}</td>
-                <td style={{ padding: "2px 6px" }}>{c.method}</td>
-                <td style={{ padding: "2px 6px", color: statusColor(c), fontWeight: 600 }}>
-                  {c.status === 0 ? "—" : c.status}
-                </td>
-                <td style={{ padding: "2px 6px" }}>{c.ms}</td>
-                <td style={{ padding: "2px 6px", wordBreak: "break-all" }}>{c.url}</td>
+        <div className="call-panel-table-wrap">
+          <table className="call-panel-table">
+            <thead>
+              <tr>
+                <th scope="col">Hora</th>
+                <th scope="col">Método</th>
+                <th scope="col">Código</th>
+                <th scope="col">ms</th>
+                <th scope="col">URL</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {calls.map((c) => (
+                <tr key={c.id}>
+                  <td>{c.at}</td>
+                  <td>{c.method}</td>
+                  <td className={statusClass(c)}>{c.status === 0 ? "—" : c.status}</td>
+                  <td>{c.ms}</td>
+                  <td className="call-panel-url">{c.url}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </section>
   );

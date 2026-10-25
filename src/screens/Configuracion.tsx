@@ -3,11 +3,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { configSchema, type ConfigForm } from "../schemas/config";
 import { setBackend } from "../api/client";
 
+export type ConnectionStatus = "disconnected" | "checking" | "verified";
+
 type Props = {
-  onReady: (cfg: ConfigForm) => void;
+  connectionStatus: ConnectionStatus;
+  healthError: string | null;
+  onBackendChange: () => void;
+  onReady: (cfg: ConfigForm) => Promise<void>;
 };
 
-export function Configuracion({ onReady }: Props) {
+export function Configuracion({
+  connectionStatus,
+  healthError,
+  onBackendChange,
+  onReady,
+}: Props) {
   const {
     register,
     handleSubmit,
@@ -21,10 +31,17 @@ export function Configuracion({ onReady }: Props) {
     },
   });
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(async (data) => {
     setBackend(data.backendUrl);
-    onReady(data);
+    await onReady(data);
   });
+
+  const statusLabel =
+    connectionStatus === "verified"
+      ? "Mesa Verificada"
+      : connectionStatus === "checking"
+        ? "Verificando conexión"
+        : "Sin conectar";
 
   return (
     <div style={{ width: "100%", padding: "1rem", boxSizing: "border-box" }}>
@@ -77,19 +94,18 @@ export function Configuracion({ onReady }: Props) {
             </div>
           </div>
 
-          <div className="mono-text" style={{
-            padding: "0.3rem 0.75rem",
-            backgroundColor: "#e8dbcc",
-            color: "#8f6d05",
-            fontSize: "0.75rem",
-            fontWeight: 700,
-            borderRadius: 4,
-            display: "flex",
-            alignItems: "center",
-            gap: "0.3rem"
-          }}>
-            <span className="material-symbols-outlined" style={{ fontSize: 16 }}>verified</span>
-            <span>Mesa Verificada</span>
+          <div
+            className={`mono-text connection-status${connectionStatus === "verified" ? " is-verified" : ""}`}
+            aria-live="polite"
+          >
+            <span className="material-symbols-outlined connection-status-icon">
+              {connectionStatus === "verified"
+                ? "verified"
+                : connectionStatus === "checking"
+                  ? "progress_activity"
+                  : "cloud_off"}
+            </span>
+            <span>{statusLabel}</span>
           </div>
         </div>
 
@@ -108,7 +124,7 @@ export function Configuracion({ onReady }: Props) {
                 className="input-field mono-text"
                 style={{ fontSize: "0.85rem" }}
                 placeholder="https://… o http://…"
-                {...register("backendUrl")}
+                {...register("backendUrl", { onChange: onBackendChange })}
               />
               {errors.backendUrl && (
                 <span style={{ color: "#b91c1c", fontSize: "0.75rem", fontWeight: 600 }}>
@@ -159,28 +175,30 @@ export function Configuracion({ onReady }: Props) {
             </div>
 
             {/* Cuadro informativo */}
-            <div style={{
-              backgroundColor: "rgba(236, 228, 218, 0.6)",
-              borderRadius: 8,
-              padding: "0.85rem",
-              border: "1px solid var(--border-color)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center"
-            }}>
-              <span className="mono-text" style={{ fontSize: "0.7rem", fontWeight: 700, color: "#4d3d32", marginBottom: "0.25rem" }}>
-                CONEXIÓN LISTA
+            <div className="configuration-note">
+              <span className="mono-text configuration-note-label">
+                {connectionStatus === "verified"
+                  ? "CONEXIÓN VERIFICADA · HTTP 200"
+                  : connectionStatus === "checking"
+                    ? "VERIFICANDO SERVIDOR"
+                    : "SIN CONECTAR"}
               </span>
-              <p style={{ margin: 0, fontSize: "0.8rem", color: "var(--text-muted)", lineHeight: 1.4 }}>
-                Ajusta los parámetros para avanzar a la sala pública o crear tu mesa privada.
+              <p>
+                Ajusta los parámetros y verifica la conexión antes de avanzar a la sala.
               </p>
             </div>
 
           </div>
 
+          {healthError && (
+            <div className="error-banner" role="alert">
+              {healthError}
+            </div>
+          )}
+
           {/* Botón principal */}
           <div style={{ paddingTop: "1rem", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end" }}>
-            <button type="submit" disabled={isSubmitting} className="btn-teal">
+            <button type="submit" disabled={isSubmitting || connectionStatus === "checking"} className="btn-teal">
               <span>{isSubmitting ? "Conectando..." : "Continuar a la Sala"}</span>
               <span className="material-symbols-outlined" style={{ fontSize: 20 }}>arrow_forward</span>
             </button>

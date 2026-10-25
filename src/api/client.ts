@@ -6,8 +6,7 @@
 //  - Inyección del token Bearer SOLO en las rutas que lo admiten (regla del 409).
 //  - Manejo explícito del 409 y decisión https-directo / http-por-proxy.
 
-import axios, { AxiosHeaders } from "axios";
-import type { AxiosError, AxiosRequestConfig } from "axios";
+import axios, { AxiosHeaders, type AxiosRequestConfig } from "axios";
 import { recordCall } from "./callLog";
 
 // --- Backend elegido en tiempo de ejecución (lo fija la pantalla de config) ---
@@ -78,6 +77,8 @@ export const customAxios = <T>(
     headers.Authorization = `Bearer ${authToken}`;
   }
 
+  let callRecorded = false;
+
   return instance({ ...config, ...options, baseURL: base, headers })
     .then((res) => {
       recordCall({
@@ -87,17 +88,26 @@ export const customAxios = <T>(
         ms: Math.round(performance.now() - started),
         ok: true,
       });
+      callRecorded = true;
+      if (method === "HEAD" && /\/api\/salud\/?$/.test(url) && res.status !== 200) {
+        throw new Error(
+          `El health check debe responder HTTP 200; el servidor respondió ${res.status}.`,
+        );
+      }
       return res.data as T;
     })
-    .catch((error: AxiosError) => {
-      const status = error.response?.status ?? 0;
-      recordCall({
-        method,
-        url: fullUrl,
-        status,
-        ms: Math.round(performance.now() - started),
-        ok: false,
-      });
+    .catch((error: unknown) => {
+      const axiosError = axios.isAxiosError(error) ? error : null;
+      const status = axiosError?.response?.status ?? 0;
+      if (!callRecorded) {
+        recordCall({
+          method,
+          url: fullUrl,
+          status,
+          ms: Math.round(performance.now() - started),
+          ok: false,
+        });
+      }
       if (status === 409) {
         console.warn(
           "[409] El backend rechazó la petición: campo, parámetro o cabecera de más, o acción fuera de fase.",

@@ -11,9 +11,9 @@ para apoyar la defensa (cada decisión queda justificada).
 
 ## 1. Qué hay en el repositorio
 
-Proyecto **React + TypeScript + Vite**, con ESLint. La base del frontend está
-completa; el juego está cableado de punta a punta y las pantallas de juego son
-un esqueleto funcional listo para pulir.
+Proyecto **React + TypeScript + Vite**, con ESLint. La interfaz y las pantallas
+principales están implementadas; queda validar el flujo completo con varios
+jugadores y contrastarlo con la demo del profesor.
 
 ### Estructura
 
@@ -32,6 +32,7 @@ src/
     CallPanel.tsx          Panel visible con cada llamada (método, URL, código, ms)
   screens/
     Configuracion.tsx      Formulario: servidor, nombre, puntos para ganar
+    Entrada.tsx            Crear una partida o unirse con su ID
     Ronda.tsx              Pantalla de juego (cambia según la fase)
   App.tsx                  Router: config -> entrada -> juego
 openapi.yaml               Spec del profesor (fuente para orval)
@@ -50,8 +51,14 @@ vite.config.ts            Proxy /api de desarrollo (para backends HTTP)
   pasa por `/api/` en Nginx (si no, el navegador lo bloquea por contenido mixto).
 - **Validación con Zod 4** en el frontend; límites alineados con la API
   (nombre 1-24, puntos 1-20).
+- **Health check:** antes de entrar a la sala, el endpoint debe responder HTTP
+  200. La interfaz indica "Sin conectar" hasta completar esta verificación.
+- **Errores 409:** se muestran mensajes orientados a la acción y fase del juego;
+  se recuerda revisar también el contrato de la API.
 - **XSS:** nombres y cartas se muestran siempre como texto. React escapa solo;
   no se usa `dangerouslySetInnerHTML` en ningún lado.
+- **CSP:** fuentes e íconos se sirven desde npm local; no hay imports de Google
+  Fonts ni recursos de fuentes externos.
 - **Sesión por pestaña** (`sessionStorage`): cada pestaña es un jugador distinto,
   necesario para probar con el mínimo de 4 jugadores.
 - **Cliente generado con orval** desde el Swagger: las 10 operaciones y sus
@@ -65,7 +72,7 @@ Las 10 están disponibles en el store (`src/state/partida.ts`).
 
 | Operación | Dónde se dispara | Estado |
 | :-- | :-- | :-- |
-| headApiSalud | App (al elegir servidor) | Cableada |
+| headApiSalud | App (al continuar desde configuración) | Cableada; requiere HTTP 200 |
 | crearPartida | Entrada | Cableada |
 | unirse | Entrada | Cableada |
 | obtenerPartida | Polling del store | Cableada |
@@ -87,7 +94,7 @@ Máquina de estados de la ronda:
 | :-- | :-- | :-- |
 | Ejecutar y finalizar una partida completa | 🟡 En progreso | Flujo cableado; falta pulir pantallas y probar de principio a fin |
 | Cambiar de servidor en la GUI (HTTP o HTTPS) | 🟢 Frontend listo | Falta cerrar a qué backend HTTP reenvía `/api/` (infra) |
-| Desplegado en Internet con HTTPS | 🔴 Pendiente | Infra: OCI + Nginx + Certbot |
+| Desplegado en Internet con HTTPS | 🟢 Hecho | Primera versión en producción el 24 oct: https://democraxssy-if6000.duckdns.org/ |
 | Seleccionar backend + nombre + (contraseña, nombre de juego) | 🟡 Parcial | Se usa backend, nombre y puntos. Sin contraseña ni nombre de juego por confirmación del profesor: **falta guardar ese correo como respaldo** |
 | Todas las operaciones usadas por el frontend | 🟢 Hecho | Las 10 en el store |
 | Datos validados en el frontend | 🟢 Hecho | Zod en config y en los bodys de la API |
@@ -113,21 +120,18 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
 ## 5. Lo que falta
 
 **Frontend**
-- Pulir las pantallas de juego de la `Ronda` (selección de cartas, mostrar votos,
-  resultado y pantalla final) — hoy son un esqueleto funcional.
-- Manejo fino de errores por fase (mensajes del 409 "acción fuera de fase").
-- Demostrar el XSS: probar con nombres y cartas que traigan `<script>`.
-- Pruebas en varios navegadores y del mínimo de 4 jugadores en número par.
+- Completar una partida con 4 pestañas (número par), desde la sala hasta la
+  pantalla final, y revisar las pantallas de juego en celular.
+- Demostrar el XSS: probar con un nombre como `<script>alert(1)</script>` y
+  confirmar que se muestra como texto.
+- Probar en producción después de cada despliegue.
 - **Verificar que nuestra solución tenga las mismas funcionalidades que las que
   el profesor mostró en vivo.** Contrastar el flujo y cada pantalla contra esa
   demo y anotar cualquier comportamiento que falte o difiera.
 
-**Infraestructura (Joel)**
-- Crear la VM en OCI, dominio, Nginx + Certbot, sitio por HTTPS.
-- Configurar el proxy `/api/` y a qué backend HTTP reenvía, con lista blanca
-  anti-SSRF. En el frontend queda el placeholder `CAMBIAR-POR-BACKEND-HTTP`
-  en `vite.config.ts` y la lógica lista en `client.ts`.
-- Script de despliegue (subir el `dist/` de `npm run build`).
+**Infraestructura**
+- Primera versión desplegada por HTTPS el 24 de octubre. El health check contra
+  el backend responde 200; validar de nuevo después de cada despliegue.
 
 **Gestión**
 - Enviar al profesor el correo con la decisión del proxy y la confirmación de
@@ -135,19 +139,17 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
 
 ---
 
-## 6. Tareas para mañana
+## 6. Pendientes actuales
 
 > ✅ **Resuelto:** pantalla en blanco. `src/api/client.ts` había quedado en la
 > versión vieja (sin `setAuthToken`); se reemplazó por la que exporta
 > `setAuthToken`/`getAuthToken`. La app ya carga sin error.
 
-1. Correr `npm run dev` y confirmar el flujo completo hasta la fase `sala`, con
-   el health check apareciendo en el panel de llamadas.
-2. (Paolo) Empezar a pulir la pantalla de respuestas.
-3. (José Andrés) Conectar el polling con el manejo de errores 409 por fase.
-4. Enviar el correo al profesor (proxy + confirmación de campos).
-5. Revisar si nuestra solución tiene las mismas funcionalidades que las que el
-   profesor mostró en vivo, y anotar diferencias.
+1. Completar una partida con cuatro pestañas y validar la experiencia móvil.
+2. Confirmar visualmente en el navegador que un nombre `<script>alert(1)</script>`
+   se representa como texto y no se ejecuta.
+3. Comparar el flujo completo y las pantallas contra la demo del profesor.
+4. Verificar el sitio de producción después del siguiente despliegue.
 
 ---
 *Universidad de Costa Rica · ECCI · IF-6000*
