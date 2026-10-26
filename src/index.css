@@ -377,17 +377,199 @@ textarea {
 .carta-negra-texto { font-size: 1.2rem; color: #231a14; font-weight: bold; }
 .carta-negra-badge { margin-left: 8px; font-size: 0.85rem; background-color: #e8ded4; padding: 2px 6px; border-radius: 4px; }
 
-.mano-cartas { display: flex; gap: 12px; flex-wrap: wrap; margin: 1rem 0 1.5rem; }
-.carta-blanca { width: 150px; height: 220px; padding: 16px; border-radius: 8px; background-color: #fdfbf9; border: 1px solid #d9cfc5; color: #2a221c; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: transform 0.15s, box-shadow 0.15s, background-color 0.15s; display: flex; flex-direction: column; justify-content: space-between; text-align: left; font-family: inherit; }
-.carta-blanca:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
-.carta-blanca[aria-pressed="true"] { background-color: #e0f3f2; border: 2px solid #2e7d7a; box-shadow: 0 4px 12px rgba(46,125,122,0.3); transform: translateY(-5px); }
-.carta-texto { font-size: 0.95rem; font-weight: bold; }
-.carta-footer { font-size: 0.7rem; color: #8a7a6e; text-align: right; font-family: monospace; }
+.contenedor-mano {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem 3rem;
+  flex-wrap: wrap;
+  perspective: 1000px;
+}
+
+.carta-fisica {
+  position: relative;
+  width: 170px;
+  min-height: 250px;
+  padding: 1.2rem;
+  border: 3px solid transparent;
+  border-radius: 12px;
+  background-color: #fdfbf9;
+  color: #19120d;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  font-family: inherit;
+  transition:
+    transform 0.25s cubic-bezier(0.25, 0.8, 0.25, 1),
+    box-shadow 0.25s,
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.carta-fisica:nth-child(7n + 1) { transform: rotate(-6deg); }
+.carta-fisica:nth-child(7n + 2) { transform: rotate(-3deg); }
+.carta-fisica:nth-child(7n + 3) { transform: rotate(0deg); }
+.carta-fisica:nth-child(7n + 4) { transform: rotate(3deg); }
+.carta-fisica:nth-child(7n + 5) { transform: rotate(6deg); }
+.carta-fisica:nth-child(7n + 6) { transform: rotate(-4deg); }
+.carta-fisica:nth-child(7n) { transform: rotate(4deg); }
+
+.carta-fisica:hover:not(:disabled) {
+  transform: translateY(-15px) rotate(0deg);
+}
+
+.carta-fisica[aria-pressed="true"] {
+  border-color: #2e7d7a;
+  background-color: #f0fafa;
+  box-shadow:
+    0 0 0 4px rgba(46, 125, 122, 0.15),
+    0 20px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-25px) rotate(0deg);
+  z-index: 2;
+}
+
+.badge-seleccion {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2e7d7a;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 12px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.badge-seleccion .material-symbols-outlined {
+  font-size: 12px;
+}
+
+.fase-cartas,
+.fase-lista {
+  margin-top: 2rem;
+}
+
+.encabezado-mano {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.encabezado-mano > .material-symbols-outlined {
+  color: var(--teal-light);
+}
+
+.encabezado-mano h3,
+.fase-lista h3 {
+  margin: 0;
+}
+
+.encabezado-mano h3 span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.espera-soberano {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.espera-soberano-icon {
+  color: var(--gold-accent);
+  font-size: 3rem;
+}
+
+.espera-soberano p {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.acciones-mano {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.boton-bajar-carta {
+  padding: 1rem 3rem;
+  border-radius: 30px;
+  font-size: 1.1rem;
+}
+
+.boton-bajar-carta .material-symbols-outlined {
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.carta-header {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #8a7a6e;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.carta-cuerpo {
+  flex-grow: 1;
+  color: #231a14;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.carta-footer {
+  margin-top: 0.75rem;
+  color: #a89f91;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: 'Outfit', monospace;
+  text-align: right;
+}
 
 /* Listas de Votación / Decisión */
-.lista-respuestas { display: grid; gap: 10px; margin-top: 1rem; }
-.respuesta-row { display: flex; gap: 16px; align-items: center; padding: 12px; background-color: #fdfbf9; border: 1px solid #e2d8ce; border-radius: 8px; }
-.respuesta-texto { flex: 1; font-size: 1.1rem; font-weight: bold; }
+.lista-respuestas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 1.5rem;
+}
+
+.respuesta-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fdfbf9;
+  border: 2px solid #e2d8ce;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.respuesta-row:hover {
+  transform: translateY(-2px);
+  border-color: #8f6d05;
+}
+
+.respuesta-texto {
+  flex: 1;
+  color: #19120d;
+  font-size: 1.2rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
 .btn-votar { padding: 8px 16px; background-color: #8f6d05; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
 .btn-votar:disabled { background-color: #dfd4c7; color: #4d3d32; cursor: default; }
 .btn-elegir { padding: 8px 16px; background-color: #2e7d7a; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -404,3 +586,33 @@ textarea {
 .tabla-posiciones li { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #f0f0f0; }
 .tabla-posiciones li:first-child { font-weight: bold; color: #8f6d05; }
 .btn-peligro { padding: 0.75rem 1.5rem; background-color: #b4232a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+@media (max-width: 640px) {
+  .contenedor-mano {
+    gap: 1rem;
+    padding: 1.5rem 0.25rem 2rem;
+  }
+
+  .carta-fisica {
+    width: min(170px, calc(50vw - 3rem));
+    min-height: 220px;
+    padding: 1rem;
+  }
+
+  .boton-bajar-carta {
+    max-width: 100%;
+    padding: 0.9rem 1.25rem;
+    font-size: 1rem;
+  }
+
+  .respuesta-row {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 1rem;
+  }
+
+  .respuesta-row .btn-votar,
+  .respuesta-row .btn-elegir {
+    align-self: flex-end;
+  }
+}

@@ -143,15 +143,26 @@ export function Ronda() {
       {/* ===== respuestas: elegir cartas de la mano ===== */}
       {fase === "respuestas" && ronda && (
         soySoberano ? (
-          <div className="panel-resultado" style={{ textAlign: "center" }}>
-            <p>Eres el soberano de esta ronda.</p>
-            <h3>Espera a que la mesa responda ({ronda.respuestas_recibidas} recibidas).</h3>
+          <div className="panel-resultado espera-soberano">
+            <span className="material-symbols-outlined espera-soberano-icon" aria-hidden="true">
+              workspace_premium
+            </span>
+            <h2>Eres el soberano de esta ronda.</h2>
+            <p>
+              Espera a que la mesa baje sus cartas ({ronda.respuestas_recibidas} recibidas).
+            </p>
           </div>
         ) : (
-          <div>
-            <p style={{ fontWeight: "bold" }}>Elige {ronda.carta_negra.elegir} carta(s) de tu mano:</p>
-            
-            <div className="mano-cartas">
+          <div className="fase-cartas">
+            <div className="encabezado-mano">
+              <span className="material-symbols-outlined" aria-hidden="true">style</span>
+              <h3>
+                Tu mano de respuestas{" "}
+                <span>(Elige {ronda.carta_negra.elegir})</span>
+              </h3>
+            </div>
+
+            <div className="contenedor-mano">
               {yo?.mano.map((c) => {
                 const seleccionada = seleccion.includes(c.id);
                 return (
@@ -160,36 +171,52 @@ export function Ronda() {
                     type="button"
                     aria-pressed={seleccionada}
                     onClick={() => toggleCarta(c.id, ronda.carta_negra.elegir)}
-                    className="carta-blanca"
+                    className="carta-fisica"
                   >
-                    <span className="carta-texto">{c.texto}</span>
-                    <span className="carta-footer">DEMOCRAXSSY</span>
+                    {seleccionada && (
+                      <span className="badge-seleccion">
+                        <span className="material-symbols-outlined" aria-hidden="true">
+                          check_circle
+                        </span>
+                        Seleccionada
+                      </span>
+                    )}
+                    <span className="carta-header">Respuesta</span>
+                    <span className="carta-cuerpo">{c.texto}</span>
+                    <span className="carta-footer">
+                      #{String(c.id).padStart(2, "0")}
+                    </span>
                   </button>
                 );
               })}
             </div>
 
-            <button
-              type="button"
-              className="btn-primario"
-              disabled={cargando || seleccion.length !== ronda.carta_negra.elegir}
-              onClick={() => {
-                void enviarRespuesta(seleccion);
-                setSeleccion([]);
-              }}
-            >
-              Enviar respuesta
-            </button>
+            <div className="acciones-mano">
+              <button
+                type="button"
+                className="btn-primario boton-bajar-carta"
+                disabled={cargando || seleccion.length !== ronda.carta_negra.elegir}
+                onClick={() => {
+                  void enviarRespuesta(seleccion);
+                  setSeleccion([]);
+                }}
+              >
+                <span className="material-symbols-outlined" aria-hidden="true">
+                  move_down
+                </span>
+                Bajar carta a la mesa
+              </button>
+            </div>
           </div>
         )
       )}
 
       {/* ===== votacion: votar una respuesta ajena ===== */}
       {fase === "votacion" && ronda && (
-        <div>
-          <p style={{ fontWeight: "bold" }}>
+        <div className="fase-lista">
+          <h3>
             {soySoberano ? "Espera a que el pueblo vote las opciones." : "Vota por tu respuesta favorita:"}
-          </p>
+          </h3>
           <div className="lista-respuestas">
             {ronda.respuestas.map((r) => (
               <div key={r.id} className="respuesta-row">
@@ -212,10 +239,10 @@ export function Ronda() {
 
       {/* ===== decision: el soberano elige la ganadora ===== */}
       {fase === "decision" && ronda && (
-        <div>
-          <p style={{ fontWeight: "bold" }}>
+        <div className="fase-lista">
+          <h3>
             {soySoberano ? "Elige la respuesta ganadora de esta ronda:" : "El soberano está decidiendo…"}
-          </p>
+          </h3>
           <div className="lista-respuestas">
             {ronda.respuestas.map((r) => (
               <div key={r.id} className="respuesta-row">
