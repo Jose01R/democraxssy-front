@@ -430,6 +430,10 @@ textarea {
   z-index: 2;
 }
 
+.carta-fisica[aria-pressed="true"]:hover {
+  transform: translateY(-25px) rotate(0deg);
+}
+
 .badge-seleccion {
   position: absolute;
   top: -12px;

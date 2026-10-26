@@ -183,9 +183,7 @@ export function Ronda() {
                     )}
                     <span className="carta-header">Respuesta</span>
                     <span className="carta-cuerpo">{c.texto}</span>
-                    <span className="carta-footer">
-                      #{String(c.id).padStart(2, "0")}
-                    </span>
+                    <span className="carta-footer">DEMOCRAXSSY</span>
                   </button>
                 );
               })}
@@ -204,7 +202,9 @@ export function Ronda() {
                 <span className="material-symbols-outlined" aria-hidden="true">
                   move_down
                 </span>
-                Bajar carta a la mesa
+                {ronda.carta_negra.elegir > 1
+                  ? "Bajar cartas a la mesa"
+                  : "Bajar carta a la mesa"}
               </button>
             </div>
           </div>
