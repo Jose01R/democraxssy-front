@@ -1,75 +1,76 @@
 # Pendientes del frontend
 
 Revisión hecha al integrar el frontend con la infraestructura (23 de octubre),
-actualizada el 24 de octubre después del merge del PR #2 (pantallas de Paolo)
-y del primer despliegue en producción. Ver también `ESTADO_DEL_PROYECTO.md`.
+actualizada el 25 de octubre después de integrar las correcciones de Paolo
+(PR #4) y de jugar una partida completa en producción con 4 pestañas. Ver
+también `ESTADO_DEL_PROYECTO.md`.
 
 ---
 
 ## 1. Requisitos del enunciado
 
-- [x] **Cambiar de servidor desde la interfaz.** La pantalla `Entrada` tiene un
-  botón para volver a la configuración inicial (`onBack`), donde se puede elegir
-  otro servidor.
-- [x] **Validar el ID de partida.** `Entrada` lo valida con una expresión regular
-  (hexadecimal de 32 caracteres) antes de llamar al backend. Opcional: pasarlo a
-  Zod por consistencia con el resto de formularios.
+- [x] **Cambiar de servidor desde la interfaz:** botón "Cambiar servidor" en
+  `Entrada`.
+- [x] **Validar el ID de partida:** expresión regular (hexadecimal de 32) antes
+  de llamar al backend.
 
-## 2. Interfaz
+## 2. Fallas encontradas en la partida de prueba (25 de octubre)
 
-### Hecho (PR #2)
+- [ ] **Los mensajes de error se borran a los 2 segundos** (`src/state/partida.ts`,
+  `refrescar`). El polling hace `set({ partida: v, error: null })` y borra
+  cualquier error de una acción. Al votar dos veces, el `PUT 409` llega (queda en
+  el panel de llamadas) pero el mensaje nunca se ve. Corrección: que `refrescar`
+  solo borre los errores que puso él mismo.
+- [ ] **Los jugadores quedan atrapados al eliminar la partida.** Los demás ven
+  "Partida no encontrada", pero el polling sigue recibiendo `404` cada 2 segundos
+  y no tienen cómo salir. Corrección: ante un 404 en `refrescar`, llamar a
+  `limpiarSesion()` y mostrar "La partida ya no existe".
+- [ ] **`GET 401` justo después de unirse** (menor): el primer polling parece
+  adelantarse al token; el siguiente ya da 200. No rompe nada, pero deja una fila
+  roja en el panel.
 
-- [x] **Cartas con aspecto de cartas:** carta negra y cartas blancas seleccionables.
-- [x] **Pantalla de resultado de la ronda:** muestra la ganadora y si coincide o no
-  con la más votada por la mesa.
-- [x] **Pantalla final:** ganador y clasificación final.
-- [x] **Detalles útiles:** botón para copiar el ID, cuántos jugadores faltan para
-  iniciar, quién ya respondió (✓) y quién ya votó (🗳️).
-- [x] **Fuentes e íconos locales:** Plus Jakarta Sans, Outfit y Material Symbols
-  se instalan con npm y se importan en `main.tsx` (antes se cargaban desde Google
-  Fonts y la CSP los bloqueaba en producción). No volver a usar `@import` de
-  Google Fonts.
-- [x] **Botón "Limpiar" del panel de llamadas** con el estilo `btn-secundario`.
+## 3. Interfaz
 
-### Pendiente
+### Hecho
 
-- [ ] **Título repetido:** "Cards for democraXSSy" aparece como encabezado de la
-  página y otra vez dentro de la tarjeta de configuración. En celular ocupan casi
-  media pantalla antes del primer campo. Dejar uno solo.
-- [ ] **Indicadores de estado engañosos:** "Mesa Verificada" y "Conexión lista"
-  aparecen antes de conectarse, pero el health check recién se hace al presionar
-  "Continuar". En un proyecto de seguridad, un "verificado" que no verificó nada
-  se puede cuestionar en la defensa. Mostrar "Sin conectar" y cambiar a
-  verificado solo cuando el health check responda 200.
-- [ ] **Fuente de los campos:** los `input` no heredan la fuente de la página
-  (el texto "Ej. HackerPoderoso" se ve en otra letra). Agregar en `index.css`:
-  `input, button, select, textarea { font: inherit; }`.
-- [ ] **Panel de llamadas con el mismo estilo:** hoy es un recuadro oscuro con
-  borde fino, distinto de las tarjetas color crema. Es lo que se muestra en la
-  defensa para demostrar las llamadas, así que conviene que se vea integrado.
-- [ ] **`index.html`:** cambiar `lang="en"` por `lang="es"` y el título
-  `democraxssy-front` por `Cards for democraXSSy` (es lo que se ve en la pestaña
-  del navegador).
-- [ ] **Borrar `src/App.css`:** ya no se importa en ningún lado y solo tiene
-  estilos de la plantilla de Vite.
-- [ ] **Estilos dentro de los componentes:** quedan unos 90 `style={{...}}`
-  (sobre todo en `Configuracion`, `Entrada` y `CallPanel`). Pasarlos a clases de
-  `index.css` es opcional, pero hace más fácil mantener un estilo uniforme.
+- [x] Cartas con aspecto de cartas, pantalla de resultado, pantalla final y
+  clasificación (PR #2).
+- [x] Copiar ID, jugadores faltantes, quién respondió (✓) y quién votó (🗳️).
+- [x] Un solo título; estado honesto ("Sin conectar" → "Verificando conexión" →
+  "Mesa Verificada" según el health check).
+- [x] `font: inherit` en los campos, panel de llamadas con estilo de tarjeta,
+  `index.html` en español y `App.css` eliminado.
+- [x] Mensajes 409 según la acción (iniciar, responder, votar, decidir, avanzar).
+  Falta que se vean: ver la falla 1 de la sección 2.
+- [x] Fuentes e íconos locales con npm (solo alfabeto latino; la fuente de íconos
+  pesa 323 KB).
 
-## 3. Para terminar de probar
+### Ideas opcionales
 
-- [ ] **Errores entendibles:** hoy se muestra el mensaje que manda el backend tal
-  cual. Convertir los 409 en mensajes según la fase, por ejemplo *"todavía no es
-  tu turno"* o *"la votación aún no está abierta"*.
-- [ ] **Demostrar el XSS:** jugar con un nombre como `<script>alert(1)</script>`
-  y mostrar que aparece como texto. Sirve como evidencia para la defensa.
-- [ ] **Partida completa con 4 pestañas** (número par), de la sala hasta la
-  pantalla final, comparada con la demo que mostró el profesor. Revisar también
-  en esa partida las pantallas de juego en celular.
-- [x] **Primer despliegue en producción:** el 24 de octubre en
-  https://democraxssy-if6000.duckdns.org/. Carga sin errores de CSP y el health
-  check contra el backend del profesor responde 200.
-- [ ] **Probar en producción después de cada despliegue**, no solo en `npm run dev`.
+- [ ] **Mostrar si la conexión es directa o por proxy** junto al estado de la
+  mesa (por ejemplo "Mesa Verificada · conexión directa" o "· vía proxy").
+  Ayuda a demostrar el requisito de backends HTTP y HTTPS.
+- [ ] **Referencia visible a la protección XSS**, por ejemplo una nota de que
+  nombres y cartas se muestran siempre como texto.
+- [ ] **Panel de llamadas cerrado por defecto**, con un botón "Mostrar llamadas
+  (N)". Con el polling se llena de `GET` repetidos y llega al tope de 100 filas;
+  agrupar o filtrar los `GET` de estado haría más fácil ver las llamadas
+  importantes en la demo.
+- [ ] **Contraste en la votación vista por el soberano:** las respuestas se ven
+  muy tenues mientras espera.
+- [ ] Pasar a clases los `style={{...}}` que quedan en `Configuracion`.
+
+## 4. Pruebas
+
+- [x] **Partida completa en producción con 4 pestañas** (25 de octubre): crear,
+  unirse ×3, iniciar, responder, votar, decidir, pantalla final y eliminar, todo
+  con respuestas 2xx. Consola sin errores.
+- [x] **XSS:** un jugador llamado `<svg onload=alert(1)>` aparece como texto en
+  todas las pantallas y no se crea ninguna etiqueta. Nota: `<script>alert(1)</script>`
+  no sirve como nombre porque tiene 25 caracteres (el máximo es 24).
+- [ ] **Repetir la partida con 2 puntos para ganar**, para probar la pantalla de
+  resultado y la operación **avanzar** (con 1 punto la partida termina directo).
+- [ ] Probar en producción después de cada despliegue, no solo en `npm run dev`.
 
 ## Notas de integración con la infraestructura
 

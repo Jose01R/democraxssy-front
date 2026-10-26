@@ -149,6 +149,9 @@ configura el mismo servidor y usa "Unirse" con el ID que muestra la sala
   blanca porque el usuario puede elegir cualquier servidor. Además: límite de
   peticiones por IP y log propio (`/var/log/nginx/proxy.log`).
 - ✅ SELinux en modo enforcing.
+- ✅ HSTS (`max-age=86400`) en el dominio; no en la IP, porque los navegadores
+  lo ignoran en direcciones IP.
+- ✅ SSH solo con llave: `passwordauthentication no`, `pubkeyauthentication yes`.
 - ✅ Script de despliegue `deploy.ps1` (sube el `dist/` de `npm run build`).
 - ✅ Primera versión desplegada el 24 de octubre; el health check contra el
   backend responde 200. Validar de nuevo después de cada despliegue.
