@@ -10,10 +10,13 @@ import axios, { AxiosHeaders, type AxiosRequestConfig } from "axios";
 import { recordCall } from "./callLog";
 
 // --- Backend elegido en tiempo de ejecución (lo fija la pantalla de config) ---
-let backendBaseUrl = "";
+// Se guarda por pestaña junto con el token: al recargar, la sesión sigue
+// apuntando al mismo servidor en vez de pedirle la partida a la propia página.
+let backendBaseUrl = sessionStorage.getItem("backendUrl") ?? "";
 
 export function setBackend(url: string): void {
   backendBaseUrl = url.trim().replace(/\/+$/, "");
+  sessionStorage.setItem("backendUrl", backendBaseUrl);
 }
 export function getBackend(): string {
   return backendBaseUrl;

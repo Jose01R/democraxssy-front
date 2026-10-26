@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { configSchema, type ConfigForm } from "../schemas/config";
 import { setBackend } from "../api/client";
+import { usePartida } from "../state/partida";
 
 export type ConnectionStatus = "disconnected" | "checking" | "verified";
 
@@ -18,6 +19,8 @@ export function Configuracion({
   onBackendChange,
   onReady,
 }: Props) {
+  // Aviso del store cuando no se pudo recuperar una sesión guardada.
+  const { error: sesionError } = usePartida();
   const {
     register,
     handleSubmit,
@@ -168,9 +171,9 @@ export function Configuracion({
 
           </div>
 
-          {healthError && (
+          {(healthError ?? sesionError) && (
             <div className="error-banner" role="alert">
-              {healthError}
+              {healthError ?? sesionError}
             </div>
           )}
 

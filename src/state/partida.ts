@@ -9,6 +9,7 @@
 
 import { useSyncExternalStore } from "react";
 import axios from "axios";
+import { ObtenerPartidaResponse } from "../schemas/generated/democraxssy.zod";
 import { setAuthToken } from "../api/client";
 import {
   headApiSalud,
@@ -94,7 +95,21 @@ function mensajeError(e: unknown, propios: Mensajes = {}): string {
         : "El servidor rechazó la acción. Inténtalo de nuevo.")
     );
   }
+  if (e instanceof RespuestaInvalida) {
+    return "El servidor respondió algo que no es una partida. Revisa la dirección del backend.";
+  }
   return "Ocurrió un error inesperado al comunicarse con el servidor.";
+}
+
+// Si el servidor devuelve algo que no es una partida (por ejemplo, una página
+// HTML de otro servidor), se rechaza aquí y no llega a romper la pantalla.
+class RespuestaInvalida extends Error {}
+
+function validarVista(v: Vista): Vista {
+  if (!ObtenerPartidaResponse.safeParse(v).success) {
+    throw new RespuestaInvalida("La respuesta no tiene el formato de una partida.");
+  }
+  return v;
 }
 
 function guardarSesion(s: Sesion) {
@@ -113,7 +128,7 @@ function guardarSesion(s: Sesion) {
 async function accion(fn: () => Promise<Vista>, mensajes?: Mensajes) {
   set({ cargando: true, error: null });
   try {
-    const v = await fn();
+    const v = validarVista(await fn());
     set({ partida: v });
   } catch (e) {
     // El error lo puso una acción, no el refresco: que el polling no lo borre.
@@ -176,7 +191,7 @@ export async function refrescar(): Promise<void> {
   const partidaId = estado.partidaId;
   if (!partidaId) return;
   try {
-    const v = await obtenerPartida(partidaId);
+    const v = validarVista(await obtenerPartida(partidaId));
     if (estado.partidaId !== partidaId) return;
     // Al cambiar de fase, el error de una acción anterior ya no aplica.
     const cambioDeFase = estado.partida !== null && estado.partida.fase !== v.fase;
@@ -192,6 +207,16 @@ export async function refrescar(): Promise<void> {
     if (axios.isAxiosError(e) && e.response?.status === 404) {
       limpiarSesion();
       set({ error: "La partida ya no existe: el anfitrión la eliminó." });
+      return;
+    }
+    // Al recargar la pestaña, si la sesión guardada ya no sirve (token
+    // inválido, partida de otro servidor…), se borra en vez de reintentar
+    // para siempre sin mostrar nada.
+    // (Un corte de red no cuenta: ahí sí se sigue reintentando.)
+    const rechazada = axios.isAxiosError(e) ? e.response !== undefined : true;
+    if (estado.partida === null && rechazada) {
+      limpiarSesion();
+      set({ error: "No se pudo recuperar tu sesión en la partida. Vuelve a unirte con el ID." });
       return;
     }
     errorDeRefresco = true;
