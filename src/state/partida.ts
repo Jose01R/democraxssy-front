@@ -154,7 +154,9 @@ export async function refrescar(): Promise<void> {
   try {
     const v = await obtenerPartida(partidaId);
     if (estado.partidaId !== partidaId) return;
-    if (errorDeRefresco) {
+    // Al cambiar de fase, el error de una acción anterior ya no aplica.
+    const cambioDeFase = estado.partida !== null && estado.partida.fase !== v.fase;
+    if (errorDeRefresco || cambioDeFase) {
       errorDeRefresco = false;
       set({ partida: v, error: null });
     } else {
