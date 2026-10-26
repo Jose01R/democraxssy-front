@@ -1,6 +1,7 @@
 // src/schemas/config.ts
 //
-// Validación del formulario inicial: servidor, nombre y puntos para ganar.
+// Validación del formulario inicial (servidor y nombre) y de los puntos para
+// ganar, que solo pide el anfitrión al crear la partida.
 // Límites alineados con la API: nombre 1-24, puntos 1-20 (default 5 en el backend).
 //
 // Escrito para Zod 4: z.strictObject, parámetro `error`, URL validada con el
@@ -26,11 +27,12 @@ export const configSchema = z.strictObject({
     .trim()
     .min(1, "Escribe tu nombre de jugador")
     .max(24, "Máximo 24 caracteres"),
-  pointsToWin: z
-    .number({ error: "Escribe un número" })
-    .int("Debe ser un número entero")
-    .min(1, "Mínimo 1 punto")
-    .max(20, "Máximo 20 puntos"),
 });
+
+export const puntosSchema = z
+  .number({ error: "Escribe un número" })
+  .int("Debe ser un número entero")
+  .min(1, "Mínimo 1 punto")
+  .max(20, "Máximo 20 puntos");
 
 export type ConfigForm = z.infer<typeof configSchema>;

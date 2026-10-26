@@ -27,7 +27,6 @@ export function Configuracion({
     defaultValues: {
       backendUrl: "https://democraxssy.akamai.meseguercr.com",
       playerName: "",
-      pointsToWin: 10,
     },
   });
 
@@ -149,27 +148,6 @@ export function Configuracion({
               {errors.playerName && (
                 <span style={{ color: "#b91c1c", fontSize: "0.75rem", fontWeight: 600 }}>
                   {errors.playerName.message}
-                </span>
-              )}
-            </div>
-
-            {/* Campo 3: Puntos para ganar */}
-            <div className="input-group">
-              <label className="input-label">
-                <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--teal-accent)" }}>workspace_premium</span>
-                <span>Puntos para ganar (Meta)</span>
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                className="input-field mono-text"
-                style={{ fontWeight: 700, fontSize: "1rem" }}
-                {...register("pointsToWin", { valueAsNumber: true })}
-              />
-              {errors.pointsToWin && (
-                <span style={{ color: "#b91c1c", fontSize: "0.75rem", fontWeight: 600 }}>
-                  {errors.pointsToWin.message}
                 </span>
               )}
             </div>

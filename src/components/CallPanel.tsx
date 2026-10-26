@@ -4,7 +4,7 @@
 // Sirve para "demostrar" las llamadas en la defensa sin depender solo de la
 // pestaña Network. Usa useSyncExternalStore para leer el store sin re-renders de más.
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { subscribe, getCalls, clearCalls, type CallRecord } from "../api/callLog";
 
 function statusClass(c: CallRecord): string {
@@ -20,6 +20,8 @@ function statusClass(c: CallRecord): string {
 
 export function CallPanel() {
   const calls = useSyncExternalStore(subscribe, getCalls);
+  // Visible por defecto: el enunciado pide mostrar las llamadas en la interfaz.
+  const [abierto, setAbierto] = useState(true);
 
   return (
     <section
@@ -28,15 +30,26 @@ export function CallPanel() {
     >
       <header className="call-panel-header">
         <strong>Llamadas ({calls.length})</strong>
-        <button type="button" onClick={clearCalls} className="btn-secundario call-panel-clear">
-          Limpiar
-        </button>
+        <div className="call-panel-acciones">
+          <button
+            type="button"
+            onClick={() => setAbierto((a) => !a)}
+            aria-expanded={abierto}
+            aria-controls="call-panel-contenido"
+            className="btn-secundario call-panel-clear"
+          >
+            {abierto ? "Ocultar" : "Mostrar"}
+          </button>
+          <button type="button" onClick={clearCalls} className="btn-secundario call-panel-clear">
+            Limpiar
+          </button>
+        </div>
       </header>
 
-      {calls.length === 0 ? (
-        <p className="call-panel-empty">Aún no se han hecho llamadas.</p>
+      {!abierto ? null : calls.length === 0 ? (
+        <p id="call-panel-contenido" className="call-panel-empty">Aún no se han hecho llamadas.</p>
       ) : (
-        <div className="call-panel-table-wrap">
+        <div id="call-panel-contenido" className="call-panel-table-wrap">
           <table className="call-panel-table">
             <thead>
               <tr>
