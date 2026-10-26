@@ -1,7 +1,7 @@
 // src/screens/Entrada.tsx
 
 import { useState } from "react";
-import type { ConfigForm } from "../schemas/config";
+import { puntosSchema, type ConfigForm } from "../schemas/config";
 import { usePartida, crear, entrar } from "../state/partida";
 import type { ConnectionStatus } from "./Configuracion";
 
@@ -18,6 +18,9 @@ function registrarError(error: unknown) {
 export function Entrada({ cfg, connectionStatus, onBack }: Props) {
   const { cargando, error } = usePartida();
   const [idUnirse, setIdUnirse] = useState("");
+  // Solo el anfitrión define la meta, por eso el campo vive en esta tarjeta.
+  const [puntos, setPuntos] = useState("5");
+  const puntosValidos = puntosSchema.safeParse(Number(puntos));
 
   // Validación exacta: exactamente 32 caracteres hexadecimales en minúscula (0-9, a-f)
   const regexHex32 = /^[0-9a-f]{32}$/;
@@ -171,17 +174,37 @@ export function Entrada({ cfg, connectionStatus, onBack }: Props) {
                   marginBottom: "1rem",
                 }}
               >
-                Crea una sala nueva. La partida estará configurada para ganar con{" "}
-                <strong>{cfg.pointsToWin} puntos</strong>.
+                Crea una sala nueva y comparte su ID con los demás jugadores.
               </p>
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="puntos-ganar" className="input-label">
+                Puntos para ganar (1-20)
+              </label>
+              <input
+                id="puntos-ganar"
+                type="number"
+                min={1}
+                max={20}
+                value={puntos}
+                onChange={(event) => setPuntos(event.target.value)}
+                className="input-field mono-text"
+              />
+              {!puntosValidos.success && (
+                <span style={{ fontSize: "0.75rem", color: "#b91c1c", fontWeight: 600 }}>
+                  {puntosValidos.error.issues[0]?.message}
+                </span>
+              )}
             </div>
 
             <button
               type="button"
-              disabled={cargando}
-              onClick={() =>
-                void crear(cfg.playerName, cfg.pointsToWin).catch(registrarError)
-              }
+              disabled={cargando || !puntosValidos.success}
+              onClick={() => {
+                if (!puntosValidos.success) return;
+                void crear(cfg.playerName, puntosValidos.data).catch(registrarError);
+              }}
               className="btn-teal"
               style={{ width: "100%" }}
             >
@@ -278,7 +301,7 @@ export function Entrada({ cfg, connectionStatus, onBack }: Props) {
                   void entrar(idUnirse.trim(), cfg.playerName).catch(registrarError)
                 }
                 className="btn-gold"
-                style={{ width: "100%", opacity: !idValido ? 0.6 : 1 }}
+                style={{ width: "100%" }}
               >
                 <span className="material-symbols-outlined" aria-hidden="true">
                   login

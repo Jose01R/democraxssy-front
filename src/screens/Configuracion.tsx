@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { configSchema, type ConfigForm } from "../schemas/config";
 import { setBackend } from "../api/client";
+import { usePartida } from "../state/partida";
 
 export type ConnectionStatus = "disconnected" | "checking" | "verified";
 
@@ -18,6 +19,8 @@ export function Configuracion({
   onBackendChange,
   onReady,
 }: Props) {
+  // Aviso del store cuando no se pudo recuperar una sesión guardada.
+  const { error: sesionError } = usePartida();
   const {
     register,
     handleSubmit,
@@ -27,7 +30,6 @@ export function Configuracion({
     defaultValues: {
       backendUrl: "https://democraxssy.akamai.meseguercr.com",
       playerName: "",
-      pointsToWin: 10,
     },
   });
 
@@ -153,27 +155,6 @@ export function Configuracion({
               )}
             </div>
 
-            {/* Campo 3: Puntos para ganar */}
-            <div className="input-group">
-              <label className="input-label">
-                <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--teal-accent)" }}>workspace_premium</span>
-                <span>Puntos para ganar (Meta)</span>
-              </label>
-              <input
-                type="number"
-                min={1}
-                max={100}
-                className="input-field mono-text"
-                style={{ fontWeight: 700, fontSize: "1rem" }}
-                {...register("pointsToWin", { valueAsNumber: true })}
-              />
-              {errors.pointsToWin && (
-                <span style={{ color: "#b91c1c", fontSize: "0.75rem", fontWeight: 600 }}>
-                  {errors.pointsToWin.message}
-                </span>
-              )}
-            </div>
-
             {/* Cuadro informativo */}
             <div className="configuration-note">
               <span className="mono-text configuration-note-label">
@@ -190,9 +171,9 @@ export function Configuracion({
 
           </div>
 
-          {healthError && (
+          {(healthError ?? sesionError) && (
             <div className="error-banner" role="alert">
-              {healthError}
+              {healthError ?? sesionError}
             </div>
           )}
 

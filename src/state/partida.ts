@@ -9,6 +9,7 @@
 
 import { useSyncExternalStore } from "react";
 import axios from "axios";
+import { ObtenerPartidaResponse } from "../schemas/generated/democraxssy.zod";
 import { setAuthToken } from "../api/client";
 import {
   headApiSalud,
@@ -67,20 +68,48 @@ export function usePartida(): Estado {
   return useSyncExternalStore(subscribe, getEstado);
 }
 
-function mensajeError(e: unknown, guia409?: string): string {
+// Mensajes para la persona que juega, según el código HTTP. El texto del
+// servidor se queda en el panel de llamadas y en la consola; aquí solo se usa
+// cuando no hay un mensaje propio para ese código.
+type Mensajes = Partial<Record<number, string>>;
+
+const MENSAJES_COMUNES: Mensajes = {
+  401: "Tu sesión en esta partida ya no es válida. Vuelve a la pantalla de acceso y únete de nuevo.",
+  404: "La partida ya no existe o el ID no es correcto.",
+  413: "La solicitud es demasiado grande para el servidor.",
+  500: "El servidor tuvo un problema interno. Inténtalo de nuevo en unos segundos.",
+};
+
+function mensajeError(e: unknown, propios: Mensajes = {}): string {
   if (axios.isAxiosError<{ error?: string }>(e)) {
-    if (e.response?.status === 409) {
-      const guia =
-        guia409 ??
-        "Verifica que la acción corresponda a la fase actual de la partida y que la solicitud respete el contrato de la API.";
-      return `El servidor rechazó la acción (409). ${guia}`;
+    const status = e.response?.status;
+    if (status === undefined) {
+      return "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo.";
     }
+    console.warn(`El servidor respondió ${status}:`, e.response?.data?.error);
     return (
-      e.response?.data?.error ??
-      "No se pudo conectar con el servidor. Comprueba tu conexión e inténtalo de nuevo."
+      propios[status] ??
+      MENSAJES_COMUNES[status] ??
+      (status === 409
+        ? "Esa acción no corresponde al momento actual de la partida."
+        : "El servidor rechazó la acción. Inténtalo de nuevo.")
     );
   }
+  if (e instanceof RespuestaInvalida) {
+    return "El servidor respondió algo que no es una partida. Revisa la dirección del backend.";
+  }
   return "Ocurrió un error inesperado al comunicarse con el servidor.";
+}
+
+// Si el servidor devuelve algo que no es una partida (por ejemplo, una página
+// HTML de otro servidor), se rechaza aquí y no llega a romper la pantalla.
+class RespuestaInvalida extends Error {}
+
+function validarVista(v: Vista): Vista {
+  if (!ObtenerPartidaResponse.safeParse(v).success) {
+    throw new RespuestaInvalida("La respuesta no tiene el formato de una partida.");
+  }
+  return v;
 }
 
 function guardarSesion(s: Sesion) {
@@ -96,15 +125,15 @@ function guardarSesion(s: Sesion) {
 }
 
 /** Envuelve una acción que devuelve la Vista actualizada, manejando carga y error. */
-async function accion(fn: () => Promise<Vista>, guia409?: string) {
+async function accion(fn: () => Promise<Vista>, mensajes?: Mensajes) {
   set({ cargando: true, error: null });
   try {
-    const v = await fn();
+    const v = validarVista(await fn());
     set({ partida: v });
   } catch (e) {
     // El error lo puso una acción, no el refresco: que el polling no lo borre.
     errorDeRefresco = false;
-    set({ error: mensajeError(e, guia409) });
+    set({ error: mensajeError(e, mensajes) });
     throw e;
   } finally {
     set({ cargando: false });
@@ -124,7 +153,11 @@ export async function crear(nombre: string, puntos: number): Promise<void> {
     const s = await crearPartida({ nombre, puntos_para_ganar: puntos });
     guardarSesion(s);
   } catch (e) {
-    set({ error: mensajeError(e) });
+    set({
+      error: mensajeError(e, {
+        400: "El nombre debe tener entre 1 y 24 caracteres y los puntos deben estar entre 1 y 20.",
+      }),
+    });
     throw e;
   } finally {
     set({ cargando: false });
@@ -137,7 +170,13 @@ export async function entrar(partidaId: string, nombre: string): Promise<void> {
     const s = await unirse(partidaId, { nombre });
     guardarSesion(s);
   } catch (e) {
-    set({ error: mensajeError(e) });
+    set({
+      error: mensajeError(e, {
+        400: "El nombre debe tener entre 1 y 24 caracteres.",
+        404: "No existe una partida con ese ID. Revisa que lo hayas copiado completo.",
+        409: "No te puedes unir: ese nombre ya está en la mesa, la partida está llena o ya empezó.",
+      }),
+    });
     throw e;
   } finally {
     set({ cargando: false });
@@ -152,7 +191,7 @@ export async function refrescar(): Promise<void> {
   const partidaId = estado.partidaId;
   if (!partidaId) return;
   try {
-    const v = await obtenerPartida(partidaId);
+    const v = validarVista(await obtenerPartida(partidaId));
     if (estado.partidaId !== partidaId) return;
     // Al cambiar de fase, el error de una acción anterior ya no aplica.
     const cambioDeFase = estado.partida !== null && estado.partida.fase !== v.fase;
@@ -170,6 +209,16 @@ export async function refrescar(): Promise<void> {
       set({ error: "La partida ya no existe: el anfitrión la eliminó." });
       return;
     }
+    // Al recargar la pestaña, si la sesión guardada ya no sirve (token
+    // inválido, partida de otro servidor…), se borra en vez de reintentar
+    // para siempre sin mostrar nada.
+    // (Un corte de red no cuenta: ahí sí se sigue reintentando.)
+    const rechazada = axios.isAxiosError(e) ? e.response !== undefined : true;
+    if (estado.partida === null && rechazada) {
+      limpiarSesion();
+      set({ error: "No se pudo recuperar tu sesión en la partida. Vuelve a unirte con el ID." });
+      return;
+    }
     errorDeRefresco = true;
     set({ error: mensajeError(e) });
   }
@@ -180,7 +229,10 @@ export async function comenzar(): Promise<void> {
   if (!estado.partidaId) return;
   await accion(
     () => iniciar(estado.partidaId as string, {}),
-    "La partida solo puede iniciar desde la sala con al menos 4 jugadores y un número par.",
+    {
+      403: "Solo el anfitrión puede repartir las cartas.",
+      409: "Para iniciar se necesitan al menos 4 jugadores y un número par.",
+    },
   );
 }
 
@@ -188,7 +240,11 @@ export async function enviarRespuesta(cartas: number[]): Promise<void> {
   if (!estado.partidaId) return;
   await accion(
     () => responder(estado.partidaId as string, { cartas }),
-    "Todavía no es tu turno para responder o la fase de respuestas aún no está abierta.",
+    {
+      400: "Esa no es la cantidad de cartas que pide la carta negra.",
+      403: "El soberano no baja cartas en esta ronda.",
+      409: "Ya bajaste tu respuesta en esta ronda.",
+    },
   );
 }
 
@@ -196,7 +252,10 @@ export async function emitirVoto(respuestaId: string): Promise<void> {
   if (!estado.partidaId) return;
   await accion(
     () => votar(estado.partidaId as string, { respuesta_id: respuestaId }),
-    "La votación aún no está abierta o ya registraste tu voto.",
+    {
+      403: "No puedes votar por esa respuesta: el soberano no vota y nadie vota por la suya.",
+      409: "Ya registraste tu voto en esta ronda.",
+    },
   );
 }
 
@@ -204,7 +263,10 @@ export async function elegirGanadora(respuestaId: string): Promise<void> {
   if (!estado.partidaId) return;
   await accion(
     () => decidir(estado.partidaId as string, { respuesta_id: respuestaId }),
-    "Todavía no es tu turno para elegir la respuesta ganadora; solo el soberano decide en esta fase.",
+    {
+      403: "Solo el soberano elige la respuesta ganadora.",
+      409: "La ganadora de esta ronda ya fue elegida.",
+    },
   );
 }
 
@@ -213,7 +275,10 @@ export async function avanzarRonda(): Promise<void> {
   if (!estado.partidaId) return;
   await accion(
     () => avanzar(estado.partidaId as string, {}),
-    "La ronda aún no está lista para avanzar o esta acción no te corresponde.",
+    {
+      403: "Solo el anfitrión o el soberano pueden pasar a la siguiente ronda.",
+      409: "La ronda todavía no se puede avanzar.",
+    },
   );
 }
 
@@ -224,10 +289,10 @@ export async function eliminar(): Promise<void> {
     limpiarSesion();
   } catch (e) {
     set({
-      error: mensajeError(
-        e,
-        "Solo el anfitrión puede eliminar la partida cuando ya terminó.",
-      ),
+      error: mensajeError(e, {
+        403: "Solo el anfitrión puede eliminar la partida.",
+        409: "La partida solo se puede eliminar cuando ya terminó.",
+      }),
     });
     throw e;
   }
