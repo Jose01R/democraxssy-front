@@ -253,7 +253,7 @@ export async function emitirVoto(respuestaId: string): Promise<void> {
   await accion(
     () => votar(estado.partidaId as string, { respuesta_id: respuestaId }),
     {
-      403: "No puedes votar por esa respuesta: el soberano no vota y nadie vota por la suya.",
+      403: "El soberano no vota en esta ronda.",
       409: "Ya registraste tu voto en esta ronda.",
     },
   );

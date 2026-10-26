@@ -391,7 +391,7 @@ export function Ronda() {
         )
       )}
 
-      {/* ===== votacion: votar una respuesta ajena ===== */}
+      {/* ===== votacion: el pueblo vota (la API permite votar por la propia) ===== */}
       {fase === "votacion" && ronda && (
         <div className="fase-lista">
           <h3>
@@ -402,7 +402,7 @@ export function Ronda() {
               <div key={r.id} className="respuesta-row">
                 <span className="respuesta-texto">{r.frase}</span>
                 {r.es_mia && <span className="etiqueta-mia">Tu respuesta</span>}
-                {!soySoberano && !r.es_mia && (
+                {!soySoberano && (
                   <button
                     type="button"
                     className="btn-votar"
@@ -428,8 +428,11 @@ export function Ronda() {
             {ronda.respuestas.map((r) => (
               <div key={r.id} className="respuesta-row">
                 <span className="respuesta-texto">{r.frase}</span>
+                {ronda.favoritas_del_pueblo.includes(r.id) && (
+                  <span className="etiqueta-favorita">Favorita del pueblo</span>
+                )}
                 <span className="votos-badge">
-                  {r.votos ?? 0} votos
+                  {r.votos ?? 0} {r.votos === 1 ? "voto" : "votos"}
                 </span>
                 {soySoberano && (
                   <button 

@@ -612,6 +612,16 @@ textarea {
 
 .espacio-lleno { white-space: normal; }
 
+.etiqueta-favorita {
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background-color: #fff2c9;
+  color: #735804;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 .etiqueta-mia {
   padding: 0.25rem 0.6rem;
   border-radius: 6px;
