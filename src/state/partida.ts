@@ -102,6 +102,8 @@ async function accion(fn: () => Promise<Vista>, guia409?: string) {
     const v = await fn();
     set({ partida: v });
   } catch (e) {
+    // El error lo puso una acción, no el refresco: que el polling no lo borre.
+    errorDeRefresco = false;
     set({ error: mensajeError(e, guia409) });
     throw e;
   } finally {
@@ -142,15 +144,33 @@ export async function entrar(partidaId: string, nombre: string): Promise<void> {
   }
 }
 
+// El refresco solo borra los errores que puso él mismo, para no
+// tapar los mensajes de las acciones (por ejemplo, un 409).
+let errorDeRefresco = false;
+
 export async function refrescar(): Promise<void> {
   const partidaId = estado.partidaId;
   if (!partidaId) return;
   try {
     const v = await obtenerPartida(partidaId);
     if (estado.partidaId !== partidaId) return;
-    set({ partida: v, error: null });
+    // Al cambiar de fase, el error de una acción anterior ya no aplica.
+    const cambioDeFase = estado.partida !== null && estado.partida.fase !== v.fase;
+    if (errorDeRefresco || cambioDeFase) {
+      errorDeRefresco = false;
+      set({ partida: v, error: null });
+    } else {
+      set({ partida: v });
+    }
   } catch (e) {
     if (estado.partidaId !== partidaId) return;
+    // La partida ya no existe: salir a la pantalla de acceso.
+    if (axios.isAxiosError(e) && e.response?.status === 404) {
+      limpiarSesion();
+      set({ error: "La partida ya no existe: el anfitrión la eliminó." });
+      return;
+    }
+    errorDeRefresco = true;
     set({ error: mensajeError(e) });
   }
 }
