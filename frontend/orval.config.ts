@@ -1,4 +1,4 @@
-// orval.config.ts  (en la raíz del proyecto, junto a package.json)
+// orval.config.ts  (en frontend/, junto a package.json; openapi.yaml está en la raíz del repo)
 //
 // Genera dos cosas desde el openapi.yaml que descargaste:
 //   1. api/generated  -> una función por operación (crear partida, unirse, votar…)
@@ -11,7 +11,7 @@ import { defineConfig } from "orval";
 
 export default defineConfig({
   api: {
-    input: "./openapi.yaml",
+    input: "../openapi.yaml",
     output: {
       mode: "single",
       target: "./src/api/generated/democraxssy.ts",
@@ -26,7 +26,7 @@ export default defineConfig({
     },
   },
   zod: {
-    input: "./openapi.yaml",
+    input: "../openapi.yaml",
     output: {
       mode: "single",
       target: "./src/schemas/generated/democraxssy.zod.ts",

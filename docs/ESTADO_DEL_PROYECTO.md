@@ -18,6 +18,8 @@ implementadas y el flujo completo está probado en producción con 4 jugadores.
 
 ### Estructura
 
+> Desde el monorepo (nov 2026) todo esto vive en `frontend/`; `openapi.yaml` está en la raíz del repo y el backend en `backend/`.
+
 ```
 src/
   api/
@@ -119,6 +121,7 @@ Máquina de estados de la ronda:
 ## 4. Cómo correrlo en local
 
 ```bash
+cd frontend
 npm install
 npx orval          # regenera cliente y esquemas desde openapi.yaml
 npm run dev        # http://localhost:5173

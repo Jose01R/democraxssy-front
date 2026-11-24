@@ -97,7 +97,7 @@ y en producción. Ver también `ESTADO_DEL_PROYECTO.md`.
   archivos como `data:` (la CSP no permite fuentes en `data:`). No quitarlo.
 - Antes de desplegar, correr **`npm run build`** (no solo `npm run dev`): es el
   que revisa los tipos de TypeScript.
-- Para desplegar: `npm run build` y después
+- Para desplegar (desde `frontend/`): `npm run build` y después
   `powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1` (ver README).
 - Los backends `http://` pasan por el proxy `/api/http/host:puerto/ruta`;
   los `https://` se llaman directo. Eso ya lo resuelve `client.ts`.

@@ -21,7 +21,7 @@
 param(
     [string]$Dist = (Join-Path $PSScriptRoot "..\dist"),
     [string]$Ip   = "129.80.16.61",
-    [string]$Key  = (Join-Path $PSScriptRoot "..\..\webserver.key")
+    [string]$Key  = (Join-Path $PSScriptRoot "..\..\..\webserver.key")
 )
 
 $ErrorActionPreference = "Stop"
