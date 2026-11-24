@@ -1,0 +1,49 @@
+# terraform apply .plan — primera creación (21 nov 2026, 16:48)
+
+oci_core_instance.backend_instance: Creating...
+oci_core_instance.backend_instance: Still creating... [00m10s elapsed]
+oci_core_instance.backend_instance: Still creating... [00m20s elapsed]
+oci_core_instance.backend_instance: Still creating... [00m30s elapsed]
+oci_core_instance.backend_instance: Still creating... [00m40s elapsed]
+oci_core_instance.backend_instance: Creation complete after 46s [id=ocid1.instance.oc1.iad.anuwcljtvyootfyc3dalmzznithwitiwttmzdmfnmczqcn53fxnu57pr2lxq]
+data.oci_core_vnic_attachments.backend: Reading...
+data.oci_core_vnic_attachments.backend: Read complete after 0s [id=CoreVnicAttachmentsDataSource-987676574]
+data.oci_core_private_ips.backend: Reading...
+data.oci_core_private_ips.backend: Read complete after 1s [id=CorePrivateIpsDataSource-2464144433]
+oci_core_public_ip.backend_ip: Creating...
+oci_core_public_ip.backend_ip: Creation complete after 0s [id=ocid1.publicip.oc1.iad.amaaaaaavyootfyawzj5ozfbunk6avslfcjqubfqgqkxg4htdaekjgrufgzq]
+
+Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
+
+Outputs:
+
+instance-OCID = "ocid1.instance.oc1.iad.anuwcljtvyootfyc3dalmzznithwitiwttmzdmfnmczqcn53fxnu57pr2lxq"
+instance-availability-domain = "vmGg:US-ASHBURN-AD-1"
+instance-image = "Oracle-Linux-9.8-2026.10.30-0"
+instance-name = "democraxssy-back-e2"
+instance-shape = "VM.Standard.E2.1.Micro"
+instance-state = "RUNNING"
+private-ip = "10.0.8.81"
+public-ip-for-backend = "157.151.151.205"
+ssh-command = "ssh -i ssh-keys/democraxssy-back opc@157.151.151.205"
+
+
+# terraform apply .plan — recreación con cloud-init corregido (21 nov 2026, 17:21)
+# (plan con -replace; la VM se destruye y se crea de nuevo, la IP reservada se reasigna)
+
+oci_core_instance.backend_instance: Destroying... [id=ocid1.instance.oc1.iad.anuwcljtvyootfyc3dalmzznithwitiwttmzdmfnmczqcn53fxnu57pr2lxq]
+oci_core_instance.backend_instance: Destruction complete after 1m7s
+oci_core_instance.backend_instance: Creating...
+oci_core_instance.backend_instance: Creation complete after 36s [id=ocid1.instance.oc1.iad.anuwcljtvyootfycgupi3xjbevgxnkupjiy5elcggopfq4fmrmai6rlcys5a]
+data.oci_core_vnic_attachments.backend: Read complete after 0s [id=CoreVnicAttachmentsDataSource-343500091]
+data.oci_core_private_ips.backend: Read complete after 0s [id=CorePrivateIpsDataSource-1027445531]
+oci_core_public_ip.backend_ip: Modifying... [id=ocid1.publicip.oc1.iad.amaaaaaavyootfyawzj5ozfbunk6avslfcjqubfqgqkxg4htdaekjgrufgzq]
+oci_core_public_ip.backend_ip: Modifications complete after 1s [id=ocid1.publicip.oc1.iad.amaaaaaavyootfyawzj5ozfbunk6avslfcjqubfqgqkxg4htdaekjgrufgzq]
+
+Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
+
+public-ip-for-backend = "157.151.151.205"   (la misma IP: es reservada)
+private-ip = "10.0.8.34"
+
+# Hubo una tercera recreación (17:32) por el mismo motivo; ver 04-cloud-init-diagnostico.md.
+# El estado final se captura en 05-estado-actual.txt.
