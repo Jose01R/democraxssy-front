@@ -21,7 +21,7 @@ output "instance-state" {
 }
 
 output "instance-image" {
-  value = data.oci_core_images.ol9.images[0].display_name
+  value = data.oci_core_image.instance_image.display_name
 }
 
 output "private-ip" {

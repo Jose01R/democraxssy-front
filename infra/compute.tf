@@ -48,3 +48,8 @@ resource "oci_core_instance" "backend_instance" {
     ignore_changes = [source_details[0].source_id]
   }
 }
+
+# Imagen con la que se creo la VM (no la mas reciente: esa la ignora lifecycle)
+data "oci_core_image" "instance_image" {
+  image_id = oci_core_instance.backend_instance.source_details[0].source_id
+}
