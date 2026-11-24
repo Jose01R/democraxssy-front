@@ -5,7 +5,7 @@ React + TypeScript + Vite. El cliente HTTP y los esquemas de validación se gene
 desde el Swagger del backend con orval.
 
 > Grupo: Joel · Paolo · José Andrés
-> Estado del proyecto y pendientes: ver **`ESTADO_DEL_PROYECTO.md`**.
+> Estado del proyecto y pendientes: ver **`../docs/ESTADO_DEL_PROYECTO.md`**.
 
 ---
 
@@ -29,7 +29,7 @@ npm -v
 ```bash
 # 1. Clonar
 git clone <URL-del-repo>
-cd democraxssy-front
+cd democraxssy-front/frontend
 
 # 2. Instalar dependencias
 npm install
@@ -103,7 +103,7 @@ src/
     Entrada.tsx      Crear una partida o unirse con su ID
     Ronda.tsx        Pantalla de juego (cambia según la fase)
   App.tsx            Router: config -> entrada -> juego
-openapi.yaml         Spec del backend (fuente de orval)
+../openapi.yaml      Spec del backend, en la raíz del repo (fuente de orval)
 orval.config.ts      Config de generación
 vite.config.ts       Incluye el proxy /api de desarrollo
 ```
@@ -150,6 +150,7 @@ Reparto actual: infraestructura/OCI (Joel) · cliente HTTP, store y panel
 El sitio se sirve con Nginx desde una VM de OCI. Para publicar una versión nueva:
 
 ```powershell
+cd frontend
 npm run build
 powershell -ExecutionPolicy Bypass -File .\scripts\deploy.ps1
 ```
