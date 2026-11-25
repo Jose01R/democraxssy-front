@@ -89,21 +89,25 @@ public class JuegoEnMemoria implements JuegoServicio {
     @Override
     public Vista obtenerPartida(String partidaId, Optional<String> token) {
         Partida partida = repositorio.obtener(partidaId);
-        Jugador yo = token.map(t -> jugadorPorToken(partida, t)).orElse(null);
-        return vistaPara(partida, yo);
+        synchronized (partida) {
+            Jugador yo = token.map(t -> jugadorPorToken(partida, t)).orElse(null);
+            return vistaPara(partida, yo);
+        }
     }
 
     @Override
     public void eliminarPartida(String partidaId, String token) {
         Partida partida = repositorio.obtener(partidaId);
-        Jugador yo = jugadorPorToken(partida, token);
-        if (!partida.esAnfitrion(yo)) {
-            throw new ProhibidoException("Solo el anfitrion puede eliminar la partida.");
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            if (!partida.esAnfitrion(yo)) {
+                throw new ProhibidoException("Solo el anfitrion puede eliminar la partida.");
+            }
+            if (partida.fase() != Fase.TERMINADA) {
+                throw new ConflictoException("Solo se puede eliminar una partida terminada.");
+            }
+            repositorio.eliminar(partidaId);
         }
-        if (partida.fase() != Fase.TERMINADA) {
-            throw new ConflictoException("Solo se puede eliminar una partida terminada.");
-        }
-        repositorio.eliminar(partidaId);
     }
 
     private static final int CARTAS_EN_MANO = 7;
@@ -170,6 +174,9 @@ public class JuegoEnMemoria implements JuegoServicio {
     private static void validarCantidadDeCartas(List<Integer> cartas, int elegir) {
         if (cartas == null || cartas.size() != elegir) {
             throw new DatosInvalidosException("Debes jugar exactamente " + elegir + " carta(s).");
+        }
+        if (cartas.stream().anyMatch(c -> c == null)) {
+            throw new DatosInvalidosException("Hay una carta invalida (null).");
         }
         if (cartas.stream().distinct().count() != cartas.size()) {
             throw new DatosInvalidosException("No puedes repetir cartas.");
