@@ -50,13 +50,33 @@ function aceptaAuth(method: string, url: string): boolean {
 // https:// -> directo (CORS abierto). http:// -> vía el proxy de Nginx (contenido mixto).
 // Formato del proxy: http://host:puerto/ruta -> /api/http/host:puerto/ruta
 // (las rutas de la API ya empiezan con /api/, p. ej. /api/http/host/api/salud).
+//
+// La decisión https-directo / http-por-proxy vive SOLO en connectionModeFor,
+// de modo que resolveBaseUrl y los indicadores de la UI no puedan divergir.
+export type ConnectionMode = "direct" | "proxy" | "none";
+
+function connectionModeFor(url: string): ConnectionMode {
+  if (url.startsWith("https://")) return "direct";
+  if (url.startsWith("http://")) return "proxy";
+  return "none";
+}
+
 function resolveBaseUrl(): string {
-  if (backendBaseUrl.startsWith("https://")) return backendBaseUrl;
-  if (backendBaseUrl.startsWith("http://")) {
+  if (connectionModeFor(backendBaseUrl) === "direct") return backendBaseUrl;
+  if (connectionModeFor(backendBaseUrl) === "proxy") {
     const u = new URL(backendBaseUrl);
     return `/api/http/${u.host}${u.pathname.replace(/\/+$/, "")}`;
   }
   return backendBaseUrl;
+}
+
+// Modo de la conexión activa del backend (lo que consume la UI).
+export function getConnectionMode(): ConnectionMode {
+  return connectionModeFor(backendBaseUrl);
+}
+
+export function isProxyConnection(): boolean {
+  return connectionModeFor(backendBaseUrl) === "proxy";
 }
 
 // Sin headers por defecto a propósito: cualquier cabecera de más dispara 409.

@@ -489,6 +489,9 @@ textarea {
 
 .barra-info {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
   gap: 0.5rem;
 }
 
@@ -502,6 +505,37 @@ textarea {
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
+}
+
+/* Indicador de tipo de conexión (directa HTTPS / proxy HTTP) */
+.indicador-conexion {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(240, 223, 215, 0.12);
+  border-radius: 10px;
+  background-color: #1a130e;
+  font-family: 'Outfit', monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #c9b8ab;
+  white-space: nowrap;
+}
+
+.indicador-conexion.es-directa {
+  border-color: rgba(76, 182, 176, 0.45);
+  color: #7fd6d0;
+}
+
+.indicador-conexion.es-proxy {
+  border-color: rgba(224, 180, 58, 0.4);
+  color: #e0b43a;
+}
+
+.indicador-conexion-icono {
+  font-size: 14px;
 }
 
 .msj-error { color: #b4232a; }
