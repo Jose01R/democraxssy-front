@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.regex.Matcher;
 
 import org.democraxssy.dominio.CartaBlanca;
 import org.democraxssy.dominio.CartaNegra;
@@ -15,12 +16,14 @@ import org.democraxssy.dominio.Partida;
 import org.democraxssy.dominio.Respuesta;
 import org.democraxssy.dominio.Ronda;
 import org.democraxssy.dto.JugadorPublico;
+import org.democraxssy.dto.RespuestaRevelada;
 import org.democraxssy.dto.Sesion;
 import org.democraxssy.dto.Vista;
 import org.democraxssy.dto.Yo;
 import org.democraxssy.errores.ConflictoException;
 import org.democraxssy.errores.DatosInvalidosException;
 import org.democraxssy.errores.NoAutenticadoException;
+import org.democraxssy.errores.NoEncontradoException;
 import org.democraxssy.errores.ProhibidoException;
 import org.democraxssy.repositorio.RepositorioPartidas;
 
@@ -185,7 +188,29 @@ public class JuegoEnMemoria implements JuegoServicio {
 
     @Override
     public Vista votar(String partidaId, String token, String respuestaId) {
-        throw new UnsupportedOperationException("pendiente: Fase B tarea 8");
+        Partida partida = repositorio.obtener(partidaId);
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            if (partida.fase() != Fase.VOTACION) {
+                throw new ConflictoException("La votacion no esta abierta.");
+            }
+            Ronda ronda = partida.ronda();
+            if (yo.id().equals(ronda.soberanoId())) {
+                throw new ProhibidoException("El soberano no vota: ya tendra la ultima palabra.");
+            }
+            if (ronda.yaVoto(yo.id())) {
+                throw new ConflictoException("Ya votaste en esta ronda.");
+            }
+            if (!ronda.existeRespuesta(respuestaId)) {
+                throw new NoEncontradoException("Respuesta no encontrada.");
+            }
+            ronda.votar(yo.id(), respuestaId);
+            if (ronda.totalVotos() == partida.jugadores().size() - 1) {
+                ronda.calcularFavoritas();
+                partida.fase(Fase.DECISION);
+            }
+            return vistaPara(partida, yo);
+        }
     }
 
     @Override
@@ -195,7 +220,31 @@ public class JuegoEnMemoria implements JuegoServicio {
 
     @Override
     public Vista avanzar(String partidaId, String token) {
-        throw new UnsupportedOperationException("pendiente: Fase B tarea 8");
+        Partida partida = repositorio.obtener(partidaId);
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            Ronda ronda = partida.ronda();
+            boolean esSoberano = ronda != null && yo.id().equals(ronda.soberanoId());
+            if (!partida.esAnfitrion(yo) && !esSoberano) {
+                throw new ProhibidoException("Solo el anfitrion o el soberano pueden avanzar.");
+            }
+            switch (partida.fase()) {
+                case RESPUESTAS -> {
+                    if (ronda.respuestas().size() < 2) {
+                        throw new ConflictoException("Se necesitan al menos 2 respuestas para abrir la votacion.");
+                    }
+                    ronda.barajarRespuestas(rng);
+                    partida.fase(Fase.VOTACION);
+                }
+                case VOTACION -> {
+                    ronda.calcularFavoritas();
+                    partida.fase(Fase.DECISION);
+                }
+                default -> throw new ConflictoException("No se puede avanzar en la fase actual.");
+                // RESULTADO -> nueva ronda (rotacion): Tarea 9
+            }
+            return vistaPara(partida, yo);
+        }
     }
 
     // ---- helpers ----
@@ -238,17 +287,19 @@ public class JuegoEnMemoria implements JuegoServicio {
                         partida.esAnfitrion(j),
                         j.id().equals(soberanoId),
                         ronda != null && ronda.yaRespondio(j.id()),
-                        false)) // ya_voto (Tarea 8)
+                        ronda != null && ronda.yaVoto(j.id())))
                 .toList();
         Yo yoDto = (yo == null) ? null
-                : new Yo(yo.id(), yo.nombre(), List.copyOf(yo.mano()), null, puedeAvanzar(partida, yo));
+                : new Yo(yo.id(), yo.nombre(), List.copyOf(yo.mano()),
+                        (ronda == null) ? null : ronda.votoDe(yo.id()),
+                        puedeAvanzar(partida, yo));
         return new Vista(
                 partida.id(),
                 partida.fase().contrato(),
                 partida.anfitrionId(),
                 partida.puntosParaGanar(),
                 jugadores,
-                rondaDto(partida),
+                rondaDto(partida, yo),
                 yoDto,
                 List.of(), // historial (Tarea 9)
                 null); // ganador_id (Tarea 9)
@@ -259,7 +310,7 @@ public class JuegoEnMemoria implements JuegoServicio {
         return partida.esAnfitrion(yo) || (ronda != null && yo.id().equals(ronda.soberanoId()));
     }
 
-    private org.democraxssy.dto.Ronda rondaDto(Partida partida) {
+    private org.democraxssy.dto.Ronda rondaDto(Partida partida, Jugador yo) {
         Ronda ronda = partida.ronda();
         if (ronda == null) {
             return null;
@@ -269,9 +320,38 @@ public class JuegoEnMemoria implements JuegoServicio {
                 ronda.soberanoId(),
                 ronda.cartaNegra(),
                 ronda.respuestas().size(),
-                0, // votos_emitidos (Tarea 8)
-                List.of(), // respuestas (revelado, Tarea 10)
-                List.of(), // favoritas_del_pueblo (Tarea 8)
-                null); // ganadora (Tarea 9)
+                ronda.totalVotos(),
+                revelarRespuestas(partida, ronda, yo),
+                ronda.favoritas(),
+                ronda.ganadora());
+    }
+
+    /** Revelado progresivo: ocultas en respuestas; anonimas desde votacion; votos desde decision; autor desde resultado. */
+    private static List<RespuestaRevelada> revelarRespuestas(Partida partida, Ronda ronda, Jugador yo) {
+        Fase fase = partida.fase();
+        if (fase == Fase.RESPUESTAS) {
+            return List.of();
+        }
+        boolean mostrarVotos = fase == Fase.DECISION || fase == Fase.RESULTADO || fase == Fase.TERMINADA;
+        boolean mostrarAutor = fase == Fase.RESULTADO || fase == Fase.TERMINADA;
+        String yoId = (yo == null) ? null : yo.id();
+        return ronda.respuestas().stream()
+                .map(r -> new RespuestaRevelada(
+                        r.id(),
+                        r.cartas().stream().map(CartaBlanca::texto).toList(),
+                        frase(ronda.cartaNegra(), r.cartas()),
+                        r.autorId().equals(yoId),
+                        mostrarVotos ? ronda.votosDe(r.id()) : null,
+                        mostrarAutor ? r.autorId() : null))
+                .toList();
+    }
+
+    /** Completa la carta negra reemplazando cada ____ por el texto de las cartas jugadas, en orden. */
+    private static String frase(CartaNegra negra, List<CartaBlanca> cartas) {
+        String texto = negra.texto();
+        for (CartaBlanca carta : cartas) {
+            texto = texto.replaceFirst("____", Matcher.quoteReplacement(carta.texto()));
+        }
+        return texto;
     }
 }
