@@ -34,7 +34,7 @@ CI.Standard.E4.Flex  (2.25 GHz AMD EPYC 7J13, x86) 1–64 OCPU
 - Plan: **Free Tier** (inicio 26 ago 2026).
 - Crédito disponible: **$300**, vence el 25 ago 2027.
 
-> Capturas pendientes: *Billing → Upgrade and Manage Payment* y el medidor de crédito.
+> Captura: `capturas/04-billing-free-tier.png` (*Billing → Upgrade and Manage Payment*: plan Free Tier y fecha de inicio).
 
 ## 5. Prueba de humo (15 nov 2026, 22:42–22:45)
 

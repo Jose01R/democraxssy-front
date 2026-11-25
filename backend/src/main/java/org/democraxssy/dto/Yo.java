@@ -2,13 +2,12 @@ package org.democraxssy.dto;
 
 import java.util.List;
 
-import org.democraxssy.dominio.CartaBlanca;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Datos privados del jugador autenticado. */
 public record Yo(
         String id,
         String nombre,
-        List<CartaBlanca> mano,
-        String miVoto,
-        boolean puedeAvanzar) {
+        List<CartaBlancaDto> mano,
+        @JsonProperty("mi_voto") String miVoto,
+        @JsonProperty("puede_avanzar") boolean puedeAvanzar) {
 }

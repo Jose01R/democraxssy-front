@@ -75,7 +75,7 @@ class ResponderTest {
         List<Sesion> s = iniciar4(j);
         String pid = s.get(0).partidaId();
         Sesion beto = s.get(1);
-        List<CartaBlanca> mano = j.obtenerPartida(pid, Optional.of(beto.token())).yo().mano();
+        var mano = j.obtenerPartida(pid, Optional.of(beto.token())).yo().mano();
         assertThrows(DatosInvalidosException.class,
                 () -> j.responder(pid, beto.token(), List.of(mano.get(0).id(), mano.get(1).id())));
     }

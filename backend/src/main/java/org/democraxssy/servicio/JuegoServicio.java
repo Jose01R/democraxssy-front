@@ -6,15 +6,8 @@ import java.util.Optional;
 import org.democraxssy.dto.Sesion;
 import org.democraxssy.dto.Vista;
 
-/**
- * Las operaciones del juego (acordadas con Joel para dividir la Fase C).
- *
- * <p>Devuelve los DTOs del contrato ({@link Sesion}, {@link Vista}) ya filtrados por jugador.
- * Es interfaz para que la capa web la pueda mockear; la implementacion es {@link JuegoEnMemoria}.
- */
 public interface JuegoServicio {
 
-    // --- Fase C: controllers de Joel ---
     Sesion crearPartida(String nombre, Integer puntosParaGanar);
 
     Sesion unirse(String partidaId, String nombre);
@@ -23,7 +16,6 @@ public interface JuegoServicio {
 
     void eliminarPartida(String partidaId, String token);
 
-    // --- Fase C: controllers mios ---
     Vista iniciar(String partidaId, String token);
 
     Vista responder(String partidaId, String token, List<Integer> cartas);

@@ -1,0 +1,31 @@
+
+Servidor: https://democraxssy-if6000.duckdns.org/api/http/api-democraxssy-if6000.duckdns.org
+----------------------------------------------------------------------------------------------------
+OK  200  (esperado 200 ) HEAD /api/salud
+OK  204  (esperado info) OPTIONS (preflight CORS)
+XX  200  (esperado 409 ) Parametro de consulta (?x=1)
+XX  200  (esperado 409 ) Authorization en /api/salud
+XX  404  (esperado 409 ) Authorization al crear partida
+XX  404  (esperado 409 ) Content-Type text/plain al crear
+XX  404  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
+XX  404  (esperado 409 ) X-HTTP-Method-Override
+XX  404  (esperado 409 ) JSON con campo desconocido
+XX  404  (esperado 409 ) JSON con clave repetida
+XX  404  (esperado 409 ) JSON sin el campo obligatorio
+XX  404  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
+XX  404  (esperado 409 ) JSON que no es objeto ([])
+XX  404  (esperado 409 ) JSON mal formado
+XX  404  (esperado 400 ) Nombre solo con espacios
+XX  404  (esperado 400 ) Nombre de 25 caracteres
+XX  404  (esperado 400 ) Nombre con caracter de control
+XX  404  (esperado 400 ) puntos_para_ganar = 0
+XX  404  (esperado 400 ) puntos_para_ganar = 21
+XX  404  (esperado 201 ) puntos_para_ganar = null (usa 5)
+        - no quedo en 5
+XX  404  (esperado 413 ) Cuerpo de mas de 4 KB
+OK  404  (esperado 404 ) Ruta inexistente
+OK  404  (esperado 404 ) Partida inexistente (32 hex)
+OK  404  (esperado info) ID de partida mal formado (informativo)
+XX  404  (esperado 201 ) Crear partida (anfitrion)
+----------------------------------------------------------------------------------------------------
+5/25 casos correctos

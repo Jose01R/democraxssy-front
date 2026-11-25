@@ -2,16 +2,15 @@ package org.democraxssy.dto;
 
 import java.util.List;
 
-import org.democraxssy.dominio.CartaNegra;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-/** Vista de la ronda actual. */
 public record Ronda(
         int numero,
-        String soberanoId,
-        CartaNegra cartaNegra,
-        int respuestasRecibidas,
-        int votosEmitidos,
+        @JsonProperty("soberano_id") String soberanoId,
+        @JsonProperty("carta_negra") CartaNegraDto cartaNegra,
+        @JsonProperty("respuestas_recibidas") int respuestasRecibidas,
+        @JsonProperty("votos_emitidos") int votosEmitidos,
         List<RespuestaRevelada> respuestas,
-        List<String> favoritasDelPueblo,
+        @JsonProperty("favoritas_del_pueblo") List<String> favoritasDelPueblo,
         String ganadora) {
 }

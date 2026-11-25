@@ -16,6 +16,8 @@ import org.democraxssy.dominio.Partida;
 import org.democraxssy.dominio.Respuesta;
 import org.democraxssy.dominio.ResultadoRonda;
 import org.democraxssy.dominio.Ronda;
+import org.democraxssy.dto.CartaBlancaDto;
+import org.democraxssy.dto.CartaNegraDto;
 import org.democraxssy.dto.JugadorPublico;
 import org.democraxssy.dto.RespuestaRevelada;
 import org.democraxssy.dto.ResumenRonda;
@@ -356,7 +358,8 @@ public class JuegoEnMemoria implements JuegoServicio {
                         ronda != null && ronda.yaVoto(j.id())))
                 .toList();
         Yo yoDto = (yo == null) ? null
-                : new Yo(yo.id(), yo.nombre(), List.copyOf(yo.mano()),
+                : new Yo(yo.id(), yo.nombre(),
+                        yo.mano().stream().map(c -> new CartaBlancaDto(c.id(), c.texto())).toList(),
                         (ronda == null) ? null : ronda.votoDe(yo.id()),
                         puedeAvanzar(partida, yo));
         return new Vista(
@@ -384,10 +387,11 @@ public class JuegoEnMemoria implements JuegoServicio {
         if (ronda == null) {
             return null;
         }
+        CartaNegra negra = ronda.cartaNegra();
         return new org.democraxssy.dto.Ronda(
                 ronda.numero(),
                 ronda.soberanoId(),
-                ronda.cartaNegra(),
+                new CartaNegraDto(negra.texto(), negra.elegir()),
                 ronda.respuestas().size(),
                 ronda.totalVotos(),
                 revelarRespuestas(partida, ronda, yo),

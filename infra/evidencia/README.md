@@ -10,6 +10,8 @@ Respaldo para `DECISIONES.md` y la defensa. Requisitos del enunciado que cubre: 
 | `04-cloud-init-diagnostico.md` | Un problema real (dnf saturaba la RAM), cómo se diagnosticó y cómo se corrigió en el código |
 | `05-estado-actual.txt` | Estado verificado: `terraform plan` sin cambios, HTTP y HTTPS, certificado, seguridad, memoria, puertos |
 | `06-despliegue-y-rollback.txt` | `deploy.ps1` funcionando y el rollback automático ante un `.jar` roto |
+| `07-pruebas-http-https.md` y `07-pruebas/` | Pruebas del contrato contra el servidor del profesor y el nuestro, por HTTPS, HTTP y HTTP vía el proxy del frontend |
+| `08-memoria.md` | Memoria del servicio y de la VM con muchas partidas abiertas. Lo genera `tools/prueba-memoria.ps1` cuando el backend esté completo (fase E) |
 | `capturas/` | Capturas de la consola de OCI, DuckDNS y el navegador (ver abajo) |
 
 ## Datos clave
@@ -24,7 +26,7 @@ Respaldo para `DECISIONES.md` y la defensa. Requisitos del enunciado que cubre: 
 | Seguridad | SELinux enforcing, firewalld (ssh, http, https), SSH solo con llave y sin root |
 | Costo | $0 (Always Free); el crédito de $300 queda intacto |
 
-## Capturas pendientes (`capturas/`)
+## Capturas (`capturas/`)
 
 1. **OCI → Compute → Instances:** las dos VM (`democraxssy-web-e2` y `democraxssy-back-e2`) en `Running`.
 2. **OCI → la VM del backend → Metrics:** CPU y memoria (para "uso racional de recursos").

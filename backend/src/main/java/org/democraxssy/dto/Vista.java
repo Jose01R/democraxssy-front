@@ -2,15 +2,16 @@ package org.democraxssy.dto;
 
 import java.util.List;
 
-/** Vista completa de la partida para un jugador (o publica si yo es null). */
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record Vista(
         String id,
         String fase,
-        String anfitrionId,
-        int puntosParaGanar,
+        @JsonProperty("anfitrion_id") String anfitrionId,
+        @JsonProperty("puntos_para_ganar") int puntosParaGanar,
         List<JugadorPublico> jugadores,
         Ronda ronda,
         Yo yo,
         List<ResumenRonda> historial,
-        String ganadorId) {
+        @JsonProperty("ganador_id") String ganadorId) {
 }

@@ -1,9 +1,10 @@
 package org.democraxssy.dto;
 
-/** Respuesta al crear o unirse: credenciales del jugador + vista de la partida. */
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record Sesion(
-        String partidaId,
-        String jugadorId,
+        @JsonProperty("partida_id") String partidaId,
+        @JsonProperty("jugador_id") String jugadorId,
         String token,
         Vista partida) {
 }

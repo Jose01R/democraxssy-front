@@ -1,10 +1,11 @@
 package org.democraxssy.dto;
 
-/** Entrada del historial: como quedo una ronda. */
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record ResumenRonda(
         int numero,
-        String soberanoId,
-        String ganadorId,
+        @JsonProperty("soberano_id") String soberanoId,
+        @JsonProperty("ganador_id") String ganadorId,
         String frase,
-        boolean respetoAlPueblo) {
+        @JsonProperty("respeto_al_pueblo") boolean respetoAlPueblo) {
 }
