@@ -1,0 +1,67 @@
+
+Servidor: https://democraxssy.akamai.meseguercr.com
+----------------------------------------------------------------------------------------------------
+OK  200  (esperado 200 ) HEAD /api/salud
+OK  204  (esperado info) OPTIONS (preflight CORS)
+OK  409  (esperado 409 ) Parametro de consulta (?x=1)
+OK  409  (esperado 409 ) Authorization en /api/salud
+OK  409  (esperado 409 ) Authorization al crear partida
+OK  409  (esperado 409 ) Content-Type text/plain al crear
+OK  201  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
+OK  409  (esperado 409 ) X-HTTP-Method-Override
+OK  409  (esperado 409 ) JSON con campo desconocido
+XX  201  (esperado 409 ) JSON con clave repetida
+OK  409  (esperado 409 ) JSON sin el campo obligatorio
+OK  409  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
+OK  409  (esperado 409 ) JSON que no es objeto ([])
+OK  409  (esperado 409 ) JSON mal formado
+OK  400  (esperado 400 ) Nombre solo con espacios
+OK  400  (esperado 400 ) Nombre de 25 caracteres
+OK  400  (esperado 400 ) Nombre con caracter de control
+OK  400  (esperado 400 ) puntos_para_ganar = 0
+OK  400  (esperado 400 ) puntos_para_ganar = 21
+OK  201  (esperado 201 ) puntos_para_ganar = null (usa 5)
+OK  413  (esperado 413 ) Cuerpo de mas de 4 KB
+OK  404  (esperado 404 ) Ruta inexistente
+OK  404  (esperado 404 ) Partida inexistente (32 hex)
+OK  404  (esperado info) ID de partida mal formado (informativo)
+OK  201  (esperado 201 ) Crear partida (anfitrion)
+OK  201  (esperado 201 ) Unirse (Beto)
+OK  201  (esperado 201 ) Unirse (Caro)
+OK  201  (esperado 201 ) Unirse (Dani)
+OK  409  (esperado 409 ) Unirse con nombre repetido (mayusculas)
+OK  409  (esperado 409 ) Authorization al unirse
+OK  200  (esperado 200 ) GET sin token (vista publica, yo = null)
+OK  200  (esperado 200 ) GET con token (incluye yo)
+OK  401  (esperado 401 ) GET con token bien formado pero ajeno
+OK  409  (esperado 409 ) GET con token mal formado
+OK  409  (esperado 409 ) Authorization repetida
+OK  409  (esperado 409 ) GET con cuerpo y Content-Type
+OK  403  (esperado 403 ) Iniciar sin ser anfitrion
+OK  409  (esperado 409 ) Avanzar en fase sala
+OK  409  (esperado 409 ) Iniciar con campo en el cuerpo
+OK  200  (esperado 200 ) Iniciar (anfitrion, 4 jugadores)
+OK  409  (esperado 409 ) Unirse despues de iniciar
+OK  403  (esperado 403 ) El soberano intenta responder
+OK  400  (esperado 400 ) Responder con cantidad incorrecta de cartas
+OK  400  (esperado 400 ) Responder con carta que no esta en la mano
+OK  409  (esperado 409 ) Votar en fase respuestas
+OK  200  (esperado 200 ) Responder (jugador 1 de 3)
+OK  200  (esperado 200 ) Responder (jugador 2 de 3)
+OK  200  (esperado 200 ) Responder (jugador 3 de 3)
+OK  200  (esperado 200 ) Tras responder todos: fase votacion, respuestas anonimas
+OK  403  (esperado 403 ) El soberano intenta votar
+OK  404  (esperado 404 ) Votar por respuesta inexistente
+OK  200  (esperado 200 ) Votar (jugador 1)
+OK  409  (esperado 409 ) Votar dos veces
+OK  200  (esperado 200 ) Votar (jugador 2)
+OK  200  (esperado 200 ) Votar (jugador 3)
+OK  200  (esperado 200 ) Tras votar todos: fase decision, votos y favoritas
+OK  403  (esperado 403 ) Decidir sin ser soberano
+OK  200  (esperado 200 ) El soberano decide (1 punto: termina)
+OK  409  (esperado 409 ) Avanzar en partida terminada
+OK  403  (esperado 403 ) Eliminar sin ser anfitrion
+OK  204  (esperado 204 ) Eliminar partida terminada (anfitrion)
+OK  404  (esperado 404 ) GET de la partida eliminada
+----------------------------------------------------------------------------------------------------
+61/62 casos correctos
