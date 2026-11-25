@@ -1,0 +1,67 @@
+
+Servidor: http://democraxssy.akamai.meseguercr.com
+----------------------------------------------------------------------------------------------------
+XX  501  (esperado 200 ) HEAD /api/salud
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado info) OPTIONS (preflight CORS)
+        - Allow-Methods sin GET
+        - Allow-Methods sin HEAD
+        - Allow-Methods sin POST
+        - Allow-Methods sin PUT
+        - Allow-Methods sin DELETE
+        - Allow-Headers sin authorization
+        - Allow-Headers sin content-type
+        - estado 501 no es 2xx
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) Parametro de consulta (?x=1)
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) Authorization en /api/salud
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) Authorization al crear partida
+        - el cuerpo no es {"error": "..."}
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) Content-Type text/plain al crear
+        - el cuerpo no es {"error": "..."}
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) X-HTTP-Method-Override
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON con campo desconocido
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON con clave repetida
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON sin el campo obligatorio
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON que no es objeto ([])
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 409 ) JSON mal formado
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 400 ) Nombre solo con espacios
+        - el cuerpo no es {"error": "..."}
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 400 ) Nombre de 25 caracteres
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 400 ) Nombre con caracter de control
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 400 ) puntos_para_ganar = 0
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 400 ) puntos_para_ganar = 21
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 201 ) puntos_para_ganar = null (usa 5)
+        - no quedo en 5
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 413 ) Cuerpo de mas de 4 KB
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 404 ) Ruta inexistente
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 404 ) Partida inexistente (32 hex)
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado info) ID de partida mal formado (informativo)
+        - falta Access-Control-Allow-Origin: *
+XX  501  (esperado 201 ) Crear partida (anfitrion)
+        - falta Access-Control-Allow-Origin: *
+----------------------------------------------------------------------------------------------------
+0/25 casos correctos
