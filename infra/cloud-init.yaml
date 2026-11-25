@@ -1,0 +1,152 @@
+#cloud-config
+# Plantilla de Terraform: ${api_domain} y ${jvm_max_heap} se reemplazan al crear la VM.
+
+write_files:
+  - path: /etc/ssh/sshd_config.d/10-democraxssy.conf
+    permissions: "0600"
+    content: |
+      PasswordAuthentication no
+      PermitRootLogin no
+
+  - path: /etc/nginx/nginx.conf
+    content: |
+      user nginx;
+      worker_processes auto;
+      error_log /var/log/nginx/error.log;
+      pid /run/nginx.pid;
+      include /usr/share/nginx/modules/*.conf;
+
+      events {
+          worker_connections 512;
+      }
+
+      http {
+          log_format main '$remote_addr [$time_local] "$request" $status '
+                          '$body_bytes_sent $request_time "$http_user_agent"';
+          access_log /var/log/nginx/access.log main;
+
+          include /etc/nginx/mime.types;
+          default_type application/octet-stream;
+          sendfile on;
+          server_tokens off;
+          keepalive_timeout 15s;
+          client_header_timeout 10s;
+          client_body_timeout 10s;
+          send_timeout 10s;
+
+          limit_req_zone $binary_remote_addr zone=api:10m rate=20r/s;
+          limit_req_status 429;
+
+          include /etc/nginx/conf.d/*.conf;
+      }
+
+  - path: /etc/nginx/conf.d/api.conf
+    content: |
+      # Cualquier host que no sea la API (por ejemplo, entrar por IP): se cierra la conexión.
+      server {
+          listen 80 default_server;
+          listen [::]:80 default_server;
+          server_name _;
+          return 444;
+      }
+
+      # API por HTTP plano, sin redirigir a HTTPS y sin HSTS (para poder demostrar HTTP).
+      # Certbot agrega después el bloque de HTTPS (443) copiando estas mismas locations.
+      server {
+          listen 80;
+          listen [::]:80;
+          server_name ${api_domain};
+
+          location /.well-known/acme-challenge/ {
+              root /usr/share/nginx/html;
+          }
+
+          location / {
+              limit_req zone=api burst=40 nodelay;
+              # El límite de 4 KB lo aplica el backend (responde 413 con CORS y formato del contrato).
+              client_max_body_size 8k;
+              proxy_pass http://127.0.0.1:8080;
+              proxy_http_version 1.1;
+              proxy_connect_timeout 5s;
+              proxy_read_timeout 15s;
+              # No se agregan cabeceras (X-Forwarded-For, etc.) por la regla del 409.
+          }
+      }
+
+  # Renovación automática del certificado (Certbot instalado con pip no trae timer propio)
+  - path: /etc/cron.d/certbot-renew
+    content: |
+      17 3,15 * * * root /usr/bin/certbot renew -q
+
+  - path: /etc/systemd/system/democraxssy-back.service
+    content: |
+      [Unit]
+      Description=Backend Cards for democraXSSy (Spring Boot)
+      After=network-online.target
+      Wants=network-online.target
+      ConditionPathExists=/opt/democraxssy/democraxssy-back.jar
+
+      [Service]
+      User=democraxssy
+      Group=democraxssy
+      WorkingDirectory=/opt/democraxssy
+      ExecStart=/usr/bin/java -Xmx${jvm_max_heap} -Xss512k -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -jar /opt/democraxssy/democraxssy-back.jar --server.address=127.0.0.1 --server.port=8080
+      Restart=on-failure
+      RestartSec=5
+      MemoryMax=500M
+      NoNewPrivileges=yes
+      ProtectSystem=strict
+      ProtectHome=yes
+      PrivateTmp=yes
+
+      [Install]
+      WantedBy=multi-user.target
+
+runcmd:
+  # Swap de 2 GB antes de instalar nada (la VM tiene 1 GB de RAM)
+  - fallocate -l 2G /swapfile
+  - chmod 600 /swapfile
+  - mkswap /swapfile
+  - swapon /swapfile
+  - echo '/swapfile none swap defaults 0 0' >> /etc/fstab
+
+  # dnf solo con BaseOS y AppStream: los demás repos (OCI Included, Ksplice, EPEL) tienen
+  # índices de cientos de MB que saturan la RAM de la E2.1.Micro
+  - systemctl disable --now dnf-makecache.timer
+  - dnf install -y --setopt=install_weak_deps=False --disablerepo='*' --enablerepo=ol9_baseos_latest --enablerepo=ol9_appstream nginx java-21-openjdk-headless python3-pip
+  - dnf clean all
+
+  # Certbot con pip en un entorno aislado (método oficial de Certbot), sin EPEL
+  - python3 -m venv /opt/certbot
+  - /opt/certbot/bin/pip install --no-cache-dir --upgrade pip
+  - /opt/certbot/bin/pip install --no-cache-dir certbot certbot-nginx
+  - ln -sf /opt/certbot/bin/certbot /usr/bin/certbot
+
+  # Usuario sin privilegios para el backend
+  - useradd --system --no-create-home --shell /sbin/nologin democraxssy
+  - mkdir -p /opt/democraxssy
+  - chown root:democraxssy /opt/democraxssy
+  - chmod 750 /opt/democraxssy
+
+  # SELinux sigue en enforcing; Nginx necesita permiso para conectarse al backend
+  - setsebool -P httpd_can_network_connect 1
+
+  # Firewall de la VM (segunda capa además de la Security List)
+  - firewall-cmd --permanent --add-service=http --add-service=https
+  - firewall-cmd --reload
+
+  - systemctl restart sshd
+  - systemctl daemon-reload
+  - systemctl enable democraxssy-back.service
+  - systemctl enable --now nginx
+
+  # kdump reserva ~450 MB de los 1 GB (crashkernel) para volcados del kernel que no se usan.
+  # Se libera esa memoria para el backend; se aplica al reiniciar.
+  - systemctl disable kdump
+  - grubby --update-kernel=ALL --remove-args=crashkernel
+
+# Reinicio final para aplicar el cambio de memoria
+power_state:
+  mode: reboot
+  message: Reinicio para liberar la memoria reservada por kdump
+  condition: true

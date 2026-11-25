@@ -1,0 +1,99 @@
+﻿# Estado de la infraestructura del backend - capturado 2026-11-21 18:39 (hora de Costa Rica)
+
+===== terraform state list =====
+data.oci_core_images.ol9
+data.oci_core_private_ips.backend
+data.oci_core_vnic_attachments.backend
+data.oci_identity_availability_domains.ads
+oci_core_instance.backend_instance
+oci_core_public_ip.backend_ip
+
+===== terraform output =====
+instance-OCID = "ocid1.instance.oc1.iad.anuwcljtvyootfyclmgrxxyhoedt5eewsaevih4ftayx5l6mtyq7dvwfypnq"
+instance-availability-domain = "vmGg:US-ASHBURN-AD-1"
+instance-image = "Oracle-Linux-9.8-2026.10.30-0"
+instance-name = "democraxssy-back-e2"
+instance-shape = "VM.Standard.E2.1.Micro"
+instance-state = "RUNNING"
+private-ip = "10.0.8.159"
+public-ip-for-backend = "157.151.151.205"
+ssh-command = "ssh -i ssh-keys/democraxssy-back opc@157.151.151.205"
+
+===== terraform plan (debe decir No changes: la infraestructura coincide con el codigo) =====
+No changes. Your infrastructure matches the configuration.
+and found no differences, so no changes are needed.
+
+===== HTTP (puerto 80, sin redireccion ni HSTS) =====
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sun, 22 Nov 2026 00:41:19 GMT
+Connection: keep-alive
+Access-control-allow-origin: *
+
+
+===== HTTPS (puerto 443) =====
+HTTP/1.1 200 OK
+Server: nginx
+Date: Sun, 22 Nov 2026 00:41:20 GMT
+Connection: keep-alive
+Access-control-allow-origin: *
+
+
+===== Acceso por IP sin dominio (Nginx cierra la conexion, codigo 000) =====
+http://157.151.151.205/ -> 000
+
+===== VM (por SSH) =====
+== certificado TLS
+subject=CN=api-democraxssy-if6000.duckdns.org
+issuer=C=US, O=Let's Encrypt, CN=YE1
+notBefore=Nov 21 22:54:39 2026 GMT
+notAfter=Feb 19 22:54:38 2027 GMT
+
+== sistema
+Oracle Linux Server 9.8, kernel 6.12.0-207.111.5.6.el9uek.x86_64
+ 00:41:35 up 57 min,  0 users,  load average: 0.00, 0.00, 0.00
+
+               total        used        free      shared  buff/cache   available
+Mem:             945         543          69           3         487         402
+Swap:           2992          13        2979
+
+== servicios (estado / al arrancar)
+nginx              active / enabled
+democraxssy-back   active / enabled
+firewalld          active / enabled
+crond              active / enabled
+kdump              inactive / disabled
+
+== seguridad
+SELinux: Enforcing
+firewalld: dhcpv6-client http https ssh
+permitrootlogin no
+passwordauthentication no
+crashkernel: desactivado
+
+== backend
+total 8
+-rw-r-----. 1 root democraxssy 2066 Nov 22 00:17 democraxssy-back.jar
+-rw-r-----. 1 root democraxssy 2066 Nov 22 00:05 democraxssy-back.jar.prev
+MemoryCurrent=113274880
+MemoryMax=524288000
+
+== puertos en escucha
+State  Recv-Q Send-Q      Local Address:Port  Peer Address:PortProcess                                                                              
+LISTEN 0      511               0.0.0.0:80         0.0.0.0:*    users:(("nginx",pid=40281,fd=6),("nginx",pid=40280,fd=6),("nginx",pid=3156,fd=6))   
+LISTEN 0      128               0.0.0.0:22         0.0.0.0:*    users:(("sshd",pid=3047,fd=7))                                                      
+LISTEN 0      511               0.0.0.0:443        0.0.0.0:*    users:(("nginx",pid=40281,fd=14),("nginx",pid=40280,fd=14),("nginx",pid=3156,fd=14))
+LISTEN 0      50     [::ffff:127.0.0.1]:8080             *:*    users:(("java",pid=42109,fd=6))                                                     
+LISTEN 0      511                  [::]:80            [::]:*    users:(("nginx",pid=40281,fd=7),("nginx",pid=40280,fd=7),("nginx",pid=3156,fd=7))   
+LISTEN 0      128                  [::]:22            [::]:*    users:(("sshd",pid=3047,fd=8))                                                      
+LISTEN 0      511                  [::]:443           [::]:*    users:(("nginx",pid=40281,fd=13),("nginx",pid=40280,fd=13),("nginx",pid=3156,fd=13))
+
+== versiones
+nginx version: nginx/1.20.1
+openjdk version "21.0.13.1" 2026-11-17 LTS
+certbot 4.2.0
+
+== renovacion del certificado
+17 3,15 * * * root /usr/bin/certbot renew -q
+    Domains: api-democraxssy-if6000.duckdns.org
+    Expiry Date: 2027-02-19 22:54:38+00:00 (VALID: 89 days)

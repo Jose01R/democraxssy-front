@@ -1,0 +1,12 @@
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+.plan
+terraform.tfvars
+ssh-keys/*
+!ssh-keys/*.pub
+*.key
+*.pem
+*.jar
+!prueba/backend-prueba.jar
