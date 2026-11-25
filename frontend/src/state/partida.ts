@@ -1,6 +1,6 @@
 // src/state/partida.ts
 //
-// Capa de datos única del juego (responsabilidad de la persona A).
+// Capa de datos única del juego
 // Todas las pantallas LEEN de aquí con usePartida() y disparan acciones con las
 // funciones exportadas; no llaman al cliente generado directamente.
 //

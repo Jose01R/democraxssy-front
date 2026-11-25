@@ -1,12 +1,12 @@
 // src/screens/Ronda.tsx
 //
-// Pantalla principal del juego (responsabilidad de la persona B).
+// Pantalla principal del juego
 // Es UNA sola pantalla que cambia según partida.fase. Lee todo del store y
 // dispara las acciones del store; no toca el cliente generado.
 //
 // SEGURIDAD XSS: nombres, frases y cartas pueden traer <script> a propósito.
 // Se muestran SIEMPRE como texto con {}. React escapa automáticamente.
-// NUNCA usar dangerouslySetInnerHTML aquí.
+// NUNCA usar dangerouslySetInnerHTML
 
 import { useState } from "react";
 import {
