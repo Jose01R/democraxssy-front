@@ -1,0 +1,1321 @@
+{
+  "negras": [
+    {
+      "id": 0,
+      "texto": "El nuevo sistema de voto electrónico fue hackeado usando ____.",
+      "elegir": 1
+    },
+    {
+      "id": 1,
+      "texto": "Para la licitación del software electoral, el ministerio exigió ____.",
+      "elegir": 1
+    },
+    {
+      "id": 2,
+      "texto": "En la auditoría de seguridad descubrieron que la clave de root era ____.",
+      "elegir": 1
+    },
+    {
+      "id": 3,
+      "texto": "Lo primero que prometió el candidato presidencial en su discurso fue ____.",
+      "elegir": 1
+    },
+    {
+      "id": 4,
+      "texto": "El fallo crítico de la base de datos nacional ocurrió por culpa de ____.",
+      "elegir": 1
+    },
+    {
+      "id": 5,
+      "texto": "En lugar de parches de seguridad, el departamento de TI implementó ____.",
+      "elegir": 1
+    },
+    {
+      "id": 6,
+      "texto": "El portal de transparencia gubernamental se cayó tras recibir ____.",
+      "elegir": 1
+    },
+    {
+      "id": 7,
+      "texto": "La última filtración de datos del ministerio reveló miles de ____.",
+      "elegir": 1
+    },
+    {
+      "id": 8,
+      "texto": "Para calmar a la prensa tras el ciberataque, el ministro presentó ____.",
+      "elegir": 1
+    },
+    {
+      "id": 9,
+      "texto": "El firewall institucional colapsó cuando un diputado envió ____.",
+      "elegir": 1
+    },
+    {
+      "id": 10,
+      "texto": "La comisión anticorrupción archivó el caso debido a ____.",
+      "elegir": 1
+    },
+    {
+      "id": 11,
+      "texto": "El presupuesto estatal para ciberseguridad se gastó enteramente en ____.",
+      "elegir": 1
+    },
+    {
+      "id": 12,
+      "texto": "Para evitar inyecciones SQL en el padrón electoral, los técnicos usan ____.",
+      "elegir": 1
+    },
+    {
+      "id": 13,
+      "texto": "El software espía estatal fue descubierto porque enviaba ____.",
+      "elegir": 1
+    },
+    {
+      "id": 14,
+      "texto": "El perito forense determinó que la brecha se produjo mediante ____.",
+      "elegir": 1
+    },
+    {
+      "id": 15,
+      "texto": "El sindicato de burócratas convocó a huelga para exigir ____.",
+      "elegir": 1
+    },
+    {
+      "id": 16,
+      "texto": "El nuevo carnet de identidad inteligente quedó inutilizable tras ____.",
+      "elegir": 1
+    },
+    {
+      "id": 17,
+      "texto": "Nadie fue a votar el domingo porque todos estaban ocupados con ____.",
+      "elegir": 1
+    },
+    {
+      "id": 18,
+      "texto": "El debate presidencial se descontroló cuando sacaron a relucir ____.",
+      "elegir": 1
+    },
+    {
+      "id": 19,
+      "texto": "El hackeo a la fiscalía general se solucionó simplemente desconectando ____.",
+      "elegir": 1
+    },
+    {
+      "id": 20,
+      "texto": "Para ganar las elecciones municipales, el partido opositor repartió ____.",
+      "elegir": 1
+    },
+    {
+      "id": 21,
+      "texto": "El certificado SSL expiró hace cinco años porque el administrador prefirió ____.",
+      "elegir": 1
+    },
+    {
+      "id": 22,
+      "texto": "La ley de protección de datos personales fue vetada para favorecer ____.",
+      "elegir": 1
+    },
+    {
+      "id": 23,
+      "texto": "El ataque de denegación de servicio contra el senado fue provocado por ____.",
+      "elegir": 1
+    },
+    {
+      "id": 24,
+      "texto": "En la nube del gobierno encontraron una carpeta oculta llena de ____.",
+      "elegir": 1
+    },
+    {
+      "id": 25,
+      "texto": "La peor vulnerabilidad de día cero encontrada en el congreso fue ____.",
+      "elegir": 1
+    },
+    {
+      "id": 26,
+      "texto": "El director de informática renunció tras ser descubierto instalando ____.",
+      "elegir": 1
+    },
+    {
+      "id": 27,
+      "texto": "La campaña de desinformación electoral fue financiada con ____.",
+      "elegir": 1
+    },
+    {
+      "id": 28,
+      "texto": "El acta de votación física desapareció misteriosamente dentro de ____.",
+      "elegir": 1
+    },
+    {
+      "id": 29,
+      "texto": "Para proteger el servidor central de la alcaldía, instalaron ____.",
+      "elegir": 1
+    },
+    {
+      "id": 30,
+      "texto": "El correo de phishing en el que cayeron todos los ministros prometía ____.",
+      "elegir": 1
+    },
+    {
+      "id": 31,
+      "texto": "La sesión del parlamento se suspendió por un ataque masivo de ____.",
+      "elegir": 1
+    },
+    {
+      "id": 32,
+      "texto": "El protocolo de contingencia nacional ante ciberataques consiste en ____.",
+      "elegir": 1
+    },
+    {
+      "id": 33,
+      "texto": "La única medida de control de acceso en la casa de gobierno era ____.",
+      "elegir": 1
+    },
+    {
+      "id": 34,
+      "texto": "El memorando clasificado filtrado a la prensa advertía sobre ____.",
+      "elegir": 1
+    },
+    {
+      "id": 35,
+      "texto": "El ransomware paralizó los hospitales debido a un clic descuidado en ____.",
+      "elegir": 1
+    },
+    {
+      "id": 36,
+      "texto": "La mesa de ayuda del ministerio respondió al ticket crítico enviando ____.",
+      "elegir": 1
+    },
+    {
+      "id": 37,
+      "texto": "El sistema biométrico de la frontera confunde a los ciudadanos con ____.",
+      "elegir": 1
+    },
+    {
+      "id": 38,
+      "texto": "Para ocultar ____, el gobierno decretó emergencia por ____.",
+      "elegir": 2
+    },
+    {
+      "id": 39,
+      "texto": "El candidato perdió el debate por culpar a ____ de haber provocado ____.",
+      "elegir": 2
+    },
+    {
+      "id": 40,
+      "texto": "En campaña prometieron ____, pero al asumir nos entregaron ____.",
+      "elegir": 2
+    },
+    {
+      "id": 41,
+      "texto": "La auditoría falló porque cambiaron ____ por ____ en el informe final.",
+      "elegir": 2
+    },
+    {
+      "id": 42,
+      "texto": "El servidor colapsó cuando mezclaron ____ con ____ en producción.",
+      "elegir": 2
+    },
+    {
+      "id": 43,
+      "texto": "Para evitar que la oposición descubriera ____, filtraron ____.",
+      "elegir": 2
+    },
+    {
+      "id": 44,
+      "texto": "El hackeo electoral comenzó con ____ y terminó involucrando ____.",
+      "elegir": 2
+    },
+    {
+      "id": 45,
+      "texto": "La licitación fue declarada desierta debido a ____ y la falta de ____.",
+      "elegir": 2
+    },
+    {
+      "id": 46,
+      "texto": "El plan de seguridad nacional prioriza ____ por encima de ____.",
+      "elegir": 2
+    },
+    {
+      "id": 47,
+      "texto": "Para justificar el sobreprecio del sistema, inventaron ____ y ____.",
+      "elegir": 2
+    },
+    {
+      "id": 48,
+      "texto": "El informe secreto vincula la caída del sistema con ____ y ____.",
+      "elegir": 2
+    },
+    {
+      "id": 49,
+      "texto": "Nadie sospechó del fraude hasta que vieron ____ al lado de ____.",
+      "elegir": 2
+    },
+    {
+      "id": 50,
+      "texto": "El ministro intentó sobornar a los auditores con ____ y ____.",
+      "elegir": 2
+    },
+    {
+      "id": 51,
+      "texto": "El ataque de phishing tuvo éxito gracias a la combinación de ____ y ____.",
+      "elegir": 2
+    },
+    {
+      "id": 52,
+      "texto": "Cambiaron la clave de la base de datos de ____ a ____ por seguridad.",
+      "elegir": 2
+    },
+    {
+      "id": 53,
+      "texto": "El comité de ética aprobó ____ a cambio de ocultar ____.",
+      "elegir": 2
+    },
+    {
+      "id": 54,
+      "texto": "El desastre informático de las elecciones se debió a ____ y un exceso de ____.",
+      "elegir": 2
+    }
+  ],
+  "blancas": [
+    {
+      "id": 0,
+      "texto": "Una contraseña pegada en un Post-it en recepción"
+    },
+    {
+      "id": 1,
+      "texto": "Un ataque de inyección SQL con ' OR 1=1--"
+    },
+    {
+      "id": 2,
+      "texto": "El sobrino del ministro cobrando como arquitecto de software"
+    },
+    {
+      "id": 3,
+      "texto": "Servidores con Windows XP en la junta electoral"
+    },
+    {
+      "id": 4,
+      "texto": "Un script de bash que sostiene toda la infraestructura estatal"
+    },
+    {
+      "id": 5,
+      "texto": "Una memoria USB encontrada en el estacionamiento del congreso"
+    },
+    {
+      "id": 6,
+      "texto": "Licitar software millonario que hace lo mismo que un Excel"
+    },
+    {
+      "id": 7,
+      "texto": "Un correo de phishing con el asunto URGENTE: Su nómina"
+    },
+    {
+      "id": 8,
+      "texto": "El certificado SSL vencido desde hace cuatro administraciones"
+    },
+    {
+      "id": 9,
+      "texto": "Un funcionario jugando Solitario durante el apagón informático"
+    },
+    {
+      "id": 10,
+      "texto": "Backups guardados en un disco duro externo sin cifrar"
+    },
+    {
+      "id": 11,
+      "texto": "La base de datos nacional de votantes en un bucket S3 público"
+    },
+    {
+      "id": 12,
+      "texto": "El token de acceso hardcodeado en el repositorio público"
+    },
+    {
+      "id": 13,
+      "texto": "Contraseña admin123 en el sistema de defensa nacional"
+    },
+    {
+      "id": 14,
+      "texto": "Prometer inteligencia artificial para tapar los baches"
+    },
+    {
+      "id": 15,
+      "texto": "Un apagón general justo a la medianoche del escrutinio"
+    },
+    {
+      "id": 16,
+      "texto": "Un funcionario sellando hojas en blanco sin mirar"
+    },
+    {
+      "id": 17,
+      "texto": "La tía del alcalde administrando el firewall principal"
+    },
+    {
+      "id": 18,
+      "texto": "Pagar rescate de ransomware con dinero de los impuestos"
+    },
+    {
+      "id": 19,
+      "texto": "Cambiar el logo del gobierno y cobrarlo como modernización"
+    },
+    {
+      "id": 20,
+      "texto": "Una auditoría que concluye que todo está conforme a la ley"
+    },
+    {
+      "id": 21,
+      "texto": "Una inyección de comandos en el formulario de quejas"
+    },
+    {
+      "id": 22,
+      "texto": "Borrar la tabla de usuarios con DROP TABLE electores;"
+    },
+    {
+      "id": 23,
+      "texto": "Reiniciar el servidor de producción a patadas"
+    },
+    {
+      "id": 24,
+      "texto": "La fotocopiadora del ministerio que tiene memoria de 250 GB"
+    },
+    {
+      "id": 25,
+      "texto": "Un consultor externo cobrando en bitcoins"
+    },
+    {
+      "id": 26,
+      "texto": "Una sesión SSH abierta desde una cafetería pública"
+    },
+    {
+      "id": 27,
+      "texto": "El sobrino del presidente liderando el equipo de ciberdefensa"
+    },
+    {
+      "id": 28,
+      "texto": "Tres sellos notariales y dos copias en papel carbón"
+    },
+    {
+      "id": 29,
+      "texto": "Un payload XSS con <script>alert(1)</script>"
+    },
+    {
+      "id": 30,
+      "texto": "Un trámite que solo se puede hacer presencialmente los jueves"
+    },
+    {
+      "id": 31,
+      "texto": "Una base de datos en Microsoft Access para 30 millones de usuarios"
+    },
+    {
+      "id": 32,
+      "texto": "Empleados públicos compartiendo la misma cuenta de Netflix"
+    },
+    {
+      "id": 33,
+      "texto": "Desconectar el cable de red para frenar una fuga masiva de datos"
+    },
+    {
+      "id": 34,
+      "texto": "Un ataque DDoS perpetrado por tres adolescentes aburridos"
+    },
+    {
+      "id": 35,
+      "texto": "Mandar contraseñas maestras por un grupo de WhatsApp"
+    },
+    {
+      "id": 36,
+      "texto": "Una comisión investigadora que dura cinco años y no concluye nada"
+    },
+    {
+      "id": 37,
+      "texto": "El becario que presionó enter en el servidor equivocado"
+    },
+    {
+      "id": 38,
+      "texto": "Una fuga de cerebros hacia empresas que sí pagan a tiempo"
+    },
+    {
+      "id": 39,
+      "texto": "Voto cantado por culpa de una pantalla mal calibrada"
+    },
+    {
+      "id": 40,
+      "texto": "Un formulario web que valida el RUT en el cliente con JavaScript"
+    },
+    {
+      "id": 41,
+      "texto": "Licencias de antivirus piratas en el ministerio de defensa"
+    },
+    {
+      "id": 42,
+      "texto": "Cero líneas de pruebas unitarias en el sistema de conteo"
+    },
+    {
+      "id": 43,
+      "texto": "Prometer fibra óptica y entregar cables de teléfono pelados"
+    },
+    {
+      "id": 44,
+      "texto": "Un funcionario que imprime los correos para archivarlos en carpetas"
+    },
+    {
+      "id": 45,
+      "texto": "Un ataque de fuerza bruta con un diccionario de 10 palabras"
+    },
+    {
+      "id": 46,
+      "texto": "Un parche de seguridad que rompe todo el sistema hospitalario"
+    },
+    {
+      "id": 47,
+      "texto": "La urna electrónica que se reinicia cuando votas por la oposición"
+    },
+    {
+      "id": 48,
+      "texto": "Contratos a dedo otorgados durante la madrugada"
+    },
+    {
+      "id": 49,
+      "texto": "Un atacante ruso exigiendo 500 dólares en tarjetas de regalo"
+    },
+    {
+      "id": 50,
+      "texto": "Un memorando clasificado filtrado por error en Twitter"
+    },
+    {
+      "id": 51,
+      "texto": "Una fuga de información atribuida al viento"
+    },
+    {
+      "id": 52,
+      "texto": "Un servidor en una sala sin aire acondicionado y con goteras"
+    },
+    {
+      "id": 53,
+      "texto": "El director de TI que estudió agronomía"
+    },
+    {
+      "id": 54,
+      "texto": "Un captcha que pide identificar semáforos inexistentes"
+    },
+    {
+      "id": 55,
+      "texto": "La clave de Wi-Fi del senado visible en una transmisión en vivo"
+    },
+    {
+      "id": 56,
+      "texto": "Echarle la culpa a los hackers rusos por un error tipográfico"
+    },
+    {
+      "id": 57,
+      "texto": "El algoritmo de asignación de subsidios que favorece al oficialismo"
+    },
+    {
+      "id": 58,
+      "texto": "Un informe forense de 800 páginas lleno de texto Lorem Ipsum"
+    },
+    {
+      "id": 59,
+      "texto": "Una donación anónima de dudosa procedencia"
+    },
+    {
+      "id": 60,
+      "texto": "El sistema de compras públicas caído durante la medianoche"
+    },
+    {
+      "id": 61,
+      "texto": "Un switch de red cubierto de telarañas detrás de un refrigerador"
+    },
+    {
+      "id": 62,
+      "texto": "Sesiones de usuario que nunca expiran"
+    },
+    {
+      "id": 63,
+      "texto": "Sobresueldos justificados como gastos de representación"
+    },
+    {
+      "id": 64,
+      "texto": "El asesor de imagen recomendando hablar de blockchain"
+    },
+    {
+      "id": 65,
+      "texto": "Un bug en producción que regala dinero a cuentas de funcionarios"
+    },
+    {
+      "id": 66,
+      "texto": "Un acta electoral escrita con lápiz grafito"
+    },
+    {
+      "id": 67,
+      "texto": "Una aplicación móvil estatal que exige acceso a contactos y cámara"
+    },
+    {
+      "id": 68,
+      "texto": "El cable Ethernet desconectado por el personal de limpieza"
+    },
+    {
+      "id": 69,
+      "texto": "Una red interna sin segmentar donde las impresoras tienen permisos root"
+    },
+    {
+      "id": 70,
+      "texto": "El ministro prometiendo que el sistema nunca ha sido vulnerado"
+    },
+    {
+      "id": 71,
+      "texto": "Un puerto 22 abierto a todo internet sin autenticación por clave"
+    },
+    {
+      "id": 72,
+      "texto": "Un enlace malicioso camuflado como invitación a un almuerzo"
+    },
+    {
+      "id": 73,
+      "texto": "Falsificar firmas digitales usando capturas de pantalla pegadas"
+    },
+    {
+      "id": 74,
+      "texto": "Un sistema de turnos que solo funciona en navegadores obsoletos"
+    },
+    {
+      "id": 75,
+      "texto": "Una empresa fantasma con sede en un paraíso fiscal"
+    },
+    {
+      "id": 76,
+      "texto": "Un router doméstico como cortafuegos del palacio de gobierno"
+    },
+    {
+      "id": 77,
+      "texto": "La página web estatal con un script minando criptomonedas"
+    },
+    {
+      "id": 78,
+      "texto": "El secretario general abriendo archivos adjuntos sospechosos"
+    },
+    {
+      "id": 79,
+      "texto": "Un ataque man-in-the-middle en la red de invitados del congreso"
+    },
+    {
+      "id": 80,
+      "texto": "Vender el padrón electoral por 50 dólares en un foro ruso"
+    },
+    {
+      "id": 81,
+      "texto": "Una auditoría externa suspendida por falta de café"
+    },
+    {
+      "id": 82,
+      "texto": "El jefe de gabinete borrando su historial de navegación con pánico"
+    },
+    {
+      "id": 83,
+      "texto": "Un sistema judicial que tramita expedientes en disquetes antiguos"
+    },
+    {
+      "id": 84,
+      "texto": "Un grupo de choque digital coordinado desde un sótano"
+    },
+    {
+      "id": 85,
+      "texto": "La promesa de campaña de regalar laptops que nunca llegaron"
+    },
+    {
+      "id": 86,
+      "texto": "Comprar licencias de software propietario y usar software libre gratis"
+    },
+    {
+      "id": 87,
+      "texto": "Un ataque de phishing que suplanta al servicio de impuestos"
+    },
+    {
+      "id": 88,
+      "texto": "El informe de vulnerabilidades guardado en una carpeta llamada No mirar"
+    },
+    {
+      "id": 89,
+      "texto": "Un desvío de fondos etiquetado como mantenimiento informático"
+    },
+    {
+      "id": 90,
+      "texto": "Un funcionario fingiendo que atiende mientras mira ofertas en línea"
+    },
+    {
+      "id": 91,
+      "texto": "El bot electoral de Twitter repitiendo el mismo error ortográfico"
+    },
+    {
+      "id": 92,
+      "texto": "Una máquina de votación con el puerto USB al alcance de los votantes"
+    },
+    {
+      "id": 93,
+      "texto": "La cuenta de redes del gobierno hackeada para promocionar criptomonedas"
+    },
+    {
+      "id": 94,
+      "texto": "Un manual de usuario de 1998 para un sistema lanzado ayer"
+    },
+    {
+      "id": 95,
+      "texto": "Un funcionario que se lleva la base de datos a su casa en un pendrive"
+    },
+    {
+      "id": 96,
+      "texto": "La auditoría que descubrió que el servidor principal era una laptop vieja"
+    },
+    {
+      "id": 97,
+      "texto": "El acta de escrutinio manchada con grasa de comida rápida"
+    },
+    {
+      "id": 98,
+      "texto": "Contratar una consultora internacional para cambiar el color de un botón"
+    },
+    {
+      "id": 99,
+      "texto": "Un keylogger instalado por error al buscar emuladores de videojuegos"
+    },
+    {
+      "id": 100,
+      "texto": "La bancada oficialista votando en bloque sin haber leído el proyecto"
+    },
+    {
+      "id": 101,
+      "texto": "Un exploit de día cero vendido al mejor postor en Telegram"
+    },
+    {
+      "id": 102,
+      "texto": "Declarar secreto de estado el código fuente del sistema de votación"
+    },
+    {
+      "id": 103,
+      "texto": "Un ataque de suplantación de identidad mediante deepfakes mal hechos"
+    },
+    {
+      "id": 104,
+      "texto": "El sistema de licitaciones adjudicado a la única empresa que se presentó"
+    },
+    {
+      "id": 105,
+      "texto": "Desactivar el firewall porque bloqueaba juegos en línea del director"
+    },
+    {
+      "id": 106,
+      "texto": "Un contrato millonario firmado en una servilleta de restaurante"
+    },
+    {
+      "id": 107,
+      "texto": "El portal de denuncias anónimas que envía tu IP al denunciado"
+    },
+    {
+      "id": 108,
+      "texto": "Un error 500 en plena cadena nacional obligatoria"
+    },
+    {
+      "id": 109,
+      "texto": "La promesa de crear un millón de empleos automatizados"
+    },
+    {
+      "id": 110,
+      "texto": "Un funcionario durmiendo la siesta sobre el teclado del servidor"
+    },
+    {
+      "id": 111,
+      "texto": "Un protocolo de autenticación basado en la palabra secreta democracia"
+    },
+    {
+      "id": 112,
+      "texto": "Votos por correo que llegaron desde una dirección inexistente"
+    },
+    {
+      "id": 113,
+      "texto": "Un fallo de desbordamiento de búfer en el sistema de pensiones"
+    },
+    {
+      "id": 114,
+      "texto": "El asesor político que cree que la nube es un fenómeno meteorológico"
+    },
+    {
+      "id": 115,
+      "texto": "Una orden de captura emitida por un bot descalibrado"
+    },
+    {
+      "id": 116,
+      "texto": "Contraseñas temporales que llevan vigentes más de diez años"
+    },
+    {
+      "id": 117,
+      "texto": "Una campaña sucia financiada con la caja chica del ministerio"
+    },
+    {
+      "id": 118,
+      "texto": "El sistema de radar aéreo funcionando con una versión de prueba vencida"
+    },
+    {
+      "id": 119,
+      "texto": "Un apagón en el centro de datos provocado por una cafetera en cortocircuito"
+    },
+    {
+      "id": 120,
+      "texto": "La promesa de digitalizar el estado mientras se exigen carpetas de cartón"
+    },
+    {
+      "id": 121,
+      "texto": "Un parche de seguridad aplicado con dos años de retraso"
+    },
+    {
+      "id": 122,
+      "texto": "Un ataque de denegación de servicio contra la propia intranet por error"
+    },
+    {
+      "id": 123,
+      "texto": "El ministro de comunicaciones usando correo gratuito para asuntos de estado"
+    },
+    {
+      "id": 124,
+      "texto": "Una fuga de datos atribuida a un becario que ya no trabaja ahí"
+    },
+    {
+      "id": 125,
+      "texto": "Un concurso público con requisitos sospechosamente específicos"
+    },
+    {
+      "id": 126,
+      "texto": "El sistema de conteo rápido que tarda tres semanas en dar resultados"
+    },
+    {
+      "id": 127,
+      "texto": "Un troyano bancario instalado en los cajeros del banco estatal"
+    },
+    {
+      "id": 128,
+      "texto": "Un bot conversacional del estado que termina insultando a los ciudadanos"
+    },
+    {
+      "id": 129,
+      "texto": "Claves maestras guardadas en un archivo de texto plano en el escritorio"
+    },
+    {
+      "id": 130,
+      "texto": "El candidato opositor inhabilitado por una infracción inexistente"
+    },
+    {
+      "id": 131,
+      "texto": "Una base de datos sin índices que colapsa con cien consultas"
+    },
+    {
+      "id": 132,
+      "texto": "Un enlace roto en la página principal del ministerio de justicia"
+    },
+    {
+      "id": 133,
+      "texto": "El sistema hospitalario sin conexión a internet desde el martes pasado"
+    },
+    {
+      "id": 134,
+      "texto": "Sobres con dinero en efectivo escondidos en el falso techo del despacho"
+    },
+    {
+      "id": 135,
+      "texto": "Una inyección LDAP en el directorio de empleados públicos"
+    },
+    {
+      "id": 136,
+      "texto": "Un cable de fibra óptica cortado por una retroexcavadora municipal"
+    },
+    {
+      "id": 137,
+      "texto": "El comité de transparencia sesionando a puertas cerradas"
+    },
+    {
+      "id": 138,
+      "texto": "Una fuga de información clasificada a través de un juego en línea"
+    },
+    {
+      "id": 139,
+      "texto": "El sistema de monitoreo satelital que usa mapas gratuitos de internet"
+    },
+    {
+      "id": 140,
+      "texto": "Un formulario de contacto que envía los correos a la papelera"
+    },
+    {
+      "id": 141,
+      "texto": "Contratar hackers éticos y terminar despidiéndolos por encontrar fallas"
+    },
+    {
+      "id": 142,
+      "texto": "El portal de empleo público que solo acepta archivos en formato antiguo"
+    },
+    {
+      "id": 143,
+      "texto": "Una votación electrónica donde el total supera el cien por ciento"
+    },
+    {
+      "id": 144,
+      "texto": "Un funcionario que se niega a jubilarse porque es el único que sabe COBOL"
+    },
+    {
+      "id": 145,
+      "texto": "Un ataque de ransomware que encriptó las multas de tránsito pendientes"
+    },
+    {
+      "id": 146,
+      "texto": "La promesa de erradicar la corrupción usando contratos inteligentes"
+    },
+    {
+      "id": 147,
+      "texto": "Una sesión virtual del congreso invadida por música estridente"
+    },
+    {
+      "id": 148,
+      "texto": "El subsecretario de tecnología admitiendo que no sabe qué es una API"
+    },
+    {
+      "id": 149,
+      "texto": "Una auditoría forense que concluyó que el mouse tenía polvo"
+    },
+    {
+      "id": 150,
+      "texto": "Un certificado digital autofirmado que hace sonar todas las alarmas"
+    },
+    {
+      "id": 151,
+      "texto": "La promesa de campaña de entregar internet satelital a las palomas"
+    },
+    {
+      "id": 152,
+      "texto": "Una fuga masiva de contraseñas almacenadas en hashes sin sal"
+    },
+    {
+      "id": 153,
+      "texto": "El portal de la presidencia redirigiendo a una tienda sospechosa"
+    },
+    {
+      "id": 154,
+      "texto": "Un funcionario que responde correos oficiales desde su cuenta personal"
+    },
+    {
+      "id": 155,
+      "texto": "Un algoritmo de predicción delictiva que solo arresta a inocentes"
+    },
+    {
+      "id": 156,
+      "texto": "La página de resultados electorales con un contador estático en HTML"
+    },
+    {
+      "id": 157,
+      "texto": "Un ataque de ingeniería social con una llamada falsa del soporte técnico"
+    },
+    {
+      "id": 158,
+      "texto": "Un sistema de expedientes digitales que exige imprimir y escanear todo"
+    },
+    {
+      "id": 159,
+      "texto": "El director de aduanas aceptando un soborno en cajas de licor fino"
+    },
+    {
+      "id": 160,
+      "texto": "Un agujero de seguridad calificado como característica del sistema"
+    },
+    {
+      "id": 161,
+      "texto": "La renuncia irrevocable presentada mediante un sticker de mensajería"
+    },
+    {
+      "id": 162,
+      "texto": "Un fallo de autenticación que permite entrar pulsando enter dos veces"
+    },
+    {
+      "id": 163,
+      "texto": "Una empresa estatal con más gerentes de imagen que ingenieros"
+    },
+    {
+      "id": 164,
+      "texto": "El plan de contingencia guardado en un casete de audio magnético"
+    },
+    {
+      "id": 165,
+      "texto": "Una campaña electoral basada en memes de hace diez años"
+    },
+    {
+      "id": 166,
+      "texto": "Un atacante que dejó un mensaje de agradecimiento en la base de datos"
+    },
+    {
+      "id": 167,
+      "texto": "El portal de licitaciones que solo funciona si se desactiva el antivirus"
+    },
+    {
+      "id": 168,
+      "texto": "Un memorándum confidencial usado como borrador para tomar notas"
+    },
+    {
+      "id": 169,
+      "texto": "El servidor de producción expuesto en Shodan con claves por defecto"
+    },
+    {
+      "id": 170,
+      "texto": "Una reunión ministerial para decidir el tamaño de la tipografía oficial"
+    },
+    {
+      "id": 171,
+      "texto": "Un ciberataque detectado seis meses después de haber terminado"
+    },
+    {
+      "id": 172,
+      "texto": "El asesor legal que confunde software libre con software desprotegido"
+    },
+    {
+      "id": 173,
+      "texto": "Un fallo en el sistema de semáforos que pone todas las luces en verde"
+    },
+    {
+      "id": 174,
+      "texto": "La base de datos de huellas dactilares guardada en imágenes comprimidas"
+    },
+    {
+      "id": 175,
+      "texto": "Un diputado votando a favor de una ley que prohíbe el uso de algoritmos"
+    },
+    {
+      "id": 176,
+      "texto": "El sitio web oficial alojado en un plan compartido de un dólar"
+    },
+    {
+      "id": 177,
+      "texto": "Un protocolo de seguridad que prohíbe usar mayúsculas en contraseñas"
+    },
+    {
+      "id": 178,
+      "texto": "Un corte de energía en el datacenter por no pagar el recibo de la luz"
+    },
+    {
+      "id": 179,
+      "texto": "La promesa de construir un tren bala con fondos de cooperación"
+    },
+    {
+      "id": 180,
+      "texto": "Un ataque CSRF en el panel de control del agua potable"
+    },
+    {
+      "id": 181,
+      "texto": "El ministro asegurando que la filtración fue un simulacro no anunciado"
+    },
+    {
+      "id": 182,
+      "texto": "Una comisión de notables debatiendo si el correo electrónico es legal"
+    },
+    {
+      "id": 183,
+      "texto": "Un script automatizado que borró los registros de auditoría por error"
+    },
+    {
+      "id": 184,
+      "texto": "El funcionario que cobra viáticos por viajar a revisar el servidor local"
+    },
+    {
+      "id": 185,
+      "texto": "Un sistema de reconocimiento facial que confunde personas con estatuas"
+    },
+    {
+      "id": 186,
+      "texto": "La clave de cifrado simétrica compartida en la firma del correo"
+    },
+    {
+      "id": 187,
+      "texto": "Un ataque de intermediario en las votaciones virtuales del parlamento"
+    },
+    {
+      "id": 188,
+      "texto": "El portal de transparencia que tarda cuatro horas en cargar una página"
+    },
+    {
+      "id": 189,
+      "texto": "Un diputado que dejó abierto su micrófono mientras pedía pizza"
+    },
+    {
+      "id": 190,
+      "texto": "El sistema de turnos médicos que entrega citas para el próximo siglo"
+    },
+    {
+      "id": 191,
+      "texto": "Una vulnerabilidad de deserialización insegura en pagos en línea"
+    },
+    {
+      "id": 192,
+      "texto": "El informático que cobra dos sueldos en ministerios rivales"
+    },
+    {
+      "id": 193,
+      "texto": "Un informe de auditoría censurado con rectángulos negros borrables"
+    },
+    {
+      "id": 194,
+      "texto": "La página de inicio del ministerio cambiada por la foto de un gato"
+    },
+    {
+      "id": 195,
+      "texto": "Un software de espionaje telefónico comprado a precio de estación espacial"
+    },
+    {
+      "id": 196,
+      "texto": "El candidato que no recuerda la moneda oficial de su país"
+    },
+    {
+      "id": 197,
+      "texto": "Una llamada de extorsión atendida por la secretaria del viceministro"
+    },
+    {
+      "id": 198,
+      "texto": "Un repositorio Git con todas las credenciales en el commit inicial"
+    },
+    {
+      "id": 199,
+      "texto": "El trámite burocrático que requiere la firma de un funcionario fallecido"
+    },
+    {
+      "id": 200,
+      "texto": "Un ataque de fuerza bruta contra el sistema de votación escolar"
+    },
+    {
+      "id": 201,
+      "texto": "La base de datos judicial borrada por una taza de café derramada"
+    },
+    {
+      "id": 202,
+      "texto": "Un portal gubernamental que bloquea a los usuarios por navegar rápido"
+    },
+    {
+      "id": 203,
+      "texto": "El ministro declarando que internet es una moda pasajera"
+    },
+    {
+      "id": 204,
+      "texto": "Una vulnerabilidad de ejecución remota de código en el portal tributario"
+    },
+    {
+      "id": 205,
+      "texto": "El funcionario que archivó una denuncia en la papelera de reciclaje"
+    },
+    {
+      "id": 206,
+      "texto": "Una redacción confusa que despenalizó el fraude cibernético por accidente"
+    },
+    {
+      "id": 207,
+      "texto": "El servidor secundario que nunca estuvo conectado a la red eléctrica"
+    },
+    {
+      "id": 208,
+      "texto": "Un debate televisado donde los candidatos repiten las mismas tres frases"
+    },
+    {
+      "id": 209,
+      "texto": "La promesa de campaña de otorgar ancho de banda ilimitado a las escuelas"
+    },
+    {
+      "id": 210,
+      "texto": "Un ataque DDoS que tumbó el portal de becas estudiantiles"
+    },
+    {
+      "id": 211,
+      "texto": "El director general que firma documentos con huella digital en la pantalla"
+    },
+    {
+      "id": 212,
+      "texto": "Un sistema de alerta temprana que solo envía notificaciones por fax"
+    },
+    {
+      "id": 213,
+      "texto": "La clave del router de la policía que sigue siendo el modelo del fabricante"
+    },
+    {
+      "id": 214,
+      "texto": "Un presupuesto de defensa destinado a comprar sillones de masaje"
+    },
+    {
+      "id": 215,
+      "texto": "Una falla de seguridad que expuso los números de documento de todos"
+    },
+    {
+      "id": 216,
+      "texto": "El informático que renunció y cambió todas las contraseñas antes de irse"
+    },
+    {
+      "id": 217,
+      "texto": "Un software de control migratorio que acepta documentos vencidos"
+    },
+    {
+      "id": 218,
+      "texto": "La rueda de prensa para aclarar un error que generó tres errores nuevos"
+    },
+    {
+      "id": 219,
+      "texto": "Un ataque de inyección XML que derribó la pasarela de interoperabilidad"
+    },
+    {
+      "id": 220,
+      "texto": "El vocero presidencial desmintiendo una noticia que nadie había publicado"
+    },
+    {
+      "id": 221,
+      "texto": "Un contrato de soporte técnico que no cubre emergencias ni fines de semana"
+    },
+    {
+      "id": 222,
+      "texto": "La promesa de modernizar el estado usando computación cuántica"
+    },
+    {
+      "id": 223,
+      "texto": "Un funcionario público usando la computadora laboral para minar cripto"
+    },
+    {
+      "id": 224,
+      "texto": "Un portal de quejas que responde automáticamente diciendo que no procede"
+    },
+    {
+      "id": 225,
+      "texto": "La urna electrónica que emite un sonido festivo cuando gana el oficialismo"
+    },
+    {
+      "id": 226,
+      "texto": "Un ataque de suplantación de DNS que redirigió el tráfico bancario"
+    },
+    {
+      "id": 227,
+      "texto": "El empleado que desconectó el cable principal para conectar su cargador"
+    },
+    {
+      "id": 228,
+      "texto": "Un dictamen pericial que califica un archivo de texto como arma cibernética"
+    },
+    {
+      "id": 229,
+      "texto": "La base de datos de subsidios manipulada desde una tablet de juguete"
+    },
+    {
+      "id": 230,
+      "texto": "Un diputado que envió una captura de pantalla de su billetera virtual"
+    },
+    {
+      "id": 231,
+      "texto": "La promesa de campaña de eliminar todos los impuestos a la tecnología"
+    },
+    {
+      "id": 232,
+      "texto": "Un ataque de phishing mediante SMS prometiendo un bono extraordinario"
+    },
+    {
+      "id": 233,
+      "texto": "El sistema penitenciario abriendo celdas por desbordamiento de enteros"
+    },
+    {
+      "id": 234,
+      "texto": "Una ley de cibercrimen redactada por personas que no usan computadora"
+    },
+    {
+      "id": 235,
+      "texto": "El informe clasificado que se hizo público por no ponerle clave al PDF"
+    },
+    {
+      "id": 236,
+      "texto": "Un apagón informático atribuido a un supuesto ataque electromagnético"
+    },
+    {
+      "id": 237,
+      "texto": "El asesor informático que cobra millones por instalar extensiones de Chrome"
+    },
+    {
+      "id": 238,
+      "texto": "Un formulario de inscripción que pierde los datos al cambiar de pestaña"
+    },
+    {
+      "id": 239,
+      "texto": "La red de semáforos inteligentes controlada con un control genérico"
+    },
+    {
+      "id": 240,
+      "texto": "Un ciberdelincuente que devolvió los datos porque le dio lástima el desorden"
+    },
+    {
+      "id": 241,
+      "texto": "El comisionado electoral admitiendo que sumaron los votos con una regla"
+    },
+    {
+      "id": 242,
+      "texto": "Un ataque de canal lateral ejecutado midiendo el ruido del ventilador"
+    },
+    {
+      "id": 243,
+      "texto": "La promesa de transparencia total cumplida borrando todos los registros"
+    },
+    {
+      "id": 244,
+      "texto": "Un funcionario que envió la lista de espías activos por correo masivo"
+    },
+    {
+      "id": 245,
+      "texto": "El sistema de registro civil que asigna el mismo número a dos personas"
+    },
+    {
+      "id": 246,
+      "texto": "Una vulnerabilidad SSRF en el portal de aduanas"
+    },
+    {
+      "id": 247,
+      "texto": "El sistema de causas judiciales congelado desde hace diez años"
+    },
+    {
+      "id": 248,
+      "texto": "Un candidato que descubrió Twitter y publica cien veces al día"
+    },
+    {
+      "id": 249,
+      "texto": "La auditoría que reveló que los servidores estaban apagados hace un mes"
+    },
+    {
+      "id": 250,
+      "texto": "Un cable de red remendado con cinta adhesiva y goma de mascar"
+    },
+    {
+      "id": 251,
+      "texto": "La promesa electoral de dar tablets a niños sin electricidad en su pueblo"
+    },
+    {
+      "id": 252,
+      "texto": "Un ataque de envenenamiento ARP en la red del tribunal supremo"
+    },
+    {
+      "id": 253,
+      "texto": "El jefe de informática que delega todas sus decisiones a un horóscopo"
+    },
+    {
+      "id": 254,
+      "texto": "Un trámite de subsidio que exige adjuntar tres fotocopias del carnet"
+    },
+    {
+      "id": 255,
+      "texto": "La contraseña del servidor escrita con plumón indeleble en la carcasa"
+    },
+    {
+      "id": 256,
+      "texto": "Un troyano de acceso remoto descargado al intentar ver fútbol gratis"
+    },
+    {
+      "id": 257,
+      "texto": "El portal de noticias del estado publicando recetas de cocina por error"
+    },
+    {
+      "id": 258,
+      "texto": "Un sistema electoral con el código fuente comentado en varios idiomas"
+    },
+    {
+      "id": 259,
+      "texto": "Una auditoría de seguridad aprobada a cambio de dos canastas navideñas"
+    }
+  ]
+}
