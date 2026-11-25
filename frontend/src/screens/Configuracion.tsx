@@ -2,6 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { configSchema, type ConfigForm } from "../schemas/config";
 import { setBackend } from "../api/client";
+import { SERVER_PRESETS } from "../config/servers";
 import { usePartida } from "../state/partida";
 
 export type ConnectionStatus = "disconnected" | "checking" | "verified";
@@ -24,11 +25,12 @@ export function Configuracion({
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<ConfigForm>({
     resolver: zodResolver(configSchema),
     defaultValues: {
-      backendUrl: "https://democraxssy.akamai.meseguercr.com",
+      backendUrl: SERVER_PRESETS.professorServer.url,
       playerName: "",
     },
   });
@@ -121,6 +123,18 @@ export function Configuracion({
                 <span className="material-symbols-outlined" style={{ fontSize: 18, color: "var(--teal-accent)" }}>lan</span>
                 <span>Servidor del backend</span>
               </label>
+              <div className="server-presets">
+                {Object.values(SERVER_PRESETS).map((preset) => (
+                  <button
+                    key={preset.url}
+                    type="button"
+                    className="server-preset"
+                    onClick={() => setValue("backendUrl", preset.url)}
+                  >
+                    {preset.label}
+                  </button>
+                ))}
+              </div>
               <input
                 type="text"
                 className="input-field mono-text"

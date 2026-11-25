@@ -148,6 +148,27 @@ textarea {
   border-color: var(--teal-accent);
 }
 
+.server-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.server-preset {
+  background-color: var(--bg-card-inner);
+  border: 1px solid rgba(42, 34, 28, 0.15);
+  border-radius: 6px;
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.server-preset:hover,
+.server-preset:focus-visible {
+  border-color: var(--teal-accent);
+}
+
 .btn-teal {
   background-color: var(--teal-primary);
   color: var(--teal-light);
