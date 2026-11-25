@@ -14,9 +14,11 @@ import org.democraxssy.dominio.Mazo;
 import org.democraxssy.dominio.Mazos;
 import org.democraxssy.dominio.Partida;
 import org.democraxssy.dominio.Respuesta;
+import org.democraxssy.dominio.ResultadoRonda;
 import org.democraxssy.dominio.Ronda;
 import org.democraxssy.dto.JugadorPublico;
 import org.democraxssy.dto.RespuestaRevelada;
+import org.democraxssy.dto.ResumenRonda;
 import org.democraxssy.dto.Sesion;
 import org.democraxssy.dto.Vista;
 import org.democraxssy.dto.Yo;
@@ -215,7 +217,35 @@ public class JuegoEnMemoria implements JuegoServicio {
 
     @Override
     public Vista decidir(String partidaId, String token, String respuestaId) {
-        throw new UnsupportedOperationException("pendiente: Fase B tarea 9");
+        Partida partida = repositorio.obtener(partidaId);
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            if (partida.fase() != Fase.DECISION) {
+                throw new ConflictoException("No es la fase de decision.");
+            }
+            Ronda ronda = partida.ronda();
+            if (!yo.id().equals(ronda.soberanoId())) {
+                throw new ProhibidoException("Solo el soberano decide la ganadora.");
+            }
+            Respuesta ganadora = ronda.respuestas().stream()
+                    .filter(r -> r.id().equals(respuestaId))
+                    .findFirst()
+                    .orElseThrow(() -> new NoEncontradoException("Respuesta no encontrada."));
+            ronda.ganadora(respuestaId);
+            Jugador autor = jugadorPorId(partida, ganadora.autorId());
+            autor.sumarPunto();
+            boolean respeto = ronda.favoritas().isEmpty() || ronda.favoritas().contains(respuestaId);
+            partida.agregarAlHistorial(new ResultadoRonda(
+                    ronda.numero(), ronda.soberanoId(), autor.id(),
+                    frase(ronda.cartaNegra(), ganadora.cartas()), respeto));
+            if (autor.puntos() >= partida.puntosParaGanar()) {
+                partida.ganadorId(autor.id());
+                partida.fase(Fase.TERMINADA);
+            } else {
+                partida.fase(Fase.RESULTADO);
+            }
+            return vistaPara(partida, yo);
+        }
     }
 
     @Override
@@ -240,8 +270,8 @@ public class JuegoEnMemoria implements JuegoServicio {
                     ronda.calcularFavoritas();
                     partida.fase(Fase.DECISION);
                 }
+                case RESULTADO -> iniciarSiguienteRonda(partida);
                 default -> throw new ConflictoException("No se puede avanzar en la fase actual.");
-                // RESULTADO -> nueva ronda (rotacion): Tarea 9
             }
             return vistaPara(partida, yo);
         }
@@ -265,6 +295,42 @@ public class JuegoEnMemoria implements JuegoServicio {
             throw new DatosInvalidosException("El nombre no admite caracteres de control.");
         }
         return limpio;
+    }
+
+    /** Rota el soberano (orden de llegada, con vuelta), recicla cartas y repone manos a 7. */
+    private void iniciarSiguienteRonda(Partida partida) {
+        Ronda anterior = partida.ronda();
+        for (Respuesta respuesta : anterior.respuestas()) {
+            partida.mazoBlancas().descartar(respuesta.cartas());
+        }
+        partida.mazoNegras().descartar(anterior.cartaNegra());
+        String siguienteSoberano = siguienteSoberano(partida, anterior.soberanoId());
+        for (Jugador jugador : partida.jugadores()) {
+            while (jugador.mano().size() < CARTAS_EN_MANO) {
+                jugador.mano().add(partida.mazoBlancas().robar());
+            }
+        }
+        partida.ronda(new Ronda(anterior.numero() + 1, siguienteSoberano, partida.mazoNegras().robar()));
+        partida.fase(Fase.RESPUESTAS);
+    }
+
+    private static String siguienteSoberano(Partida partida, String actualId) {
+        List<Jugador> jugadores = partida.jugadores();
+        int indice = 0;
+        for (int i = 0; i < jugadores.size(); i++) {
+            if (jugadores.get(i).id().equals(actualId)) {
+                indice = i;
+                break;
+            }
+        }
+        return jugadores.get((indice + 1) % jugadores.size()).id();
+    }
+
+    private Jugador jugadorPorId(Partida partida, String id) {
+        return partida.jugadores().stream()
+                .filter(j -> j.id().equals(id))
+                .findFirst()
+                .orElseThrow(() -> new NoEncontradoException("Jugador no encontrado."));
     }
 
     private Jugador jugadorPorToken(Partida partida, String token) {
@@ -301,8 +367,11 @@ public class JuegoEnMemoria implements JuegoServicio {
                 jugadores,
                 rondaDto(partida, yo),
                 yoDto,
-                List.of(), // historial (Tarea 9)
-                null); // ganador_id (Tarea 9)
+                partida.historial().stream()
+                        .map(h -> new ResumenRonda(
+                                h.numero(), h.soberanoId(), h.ganadorId(), h.frase(), h.respetoAlPueblo()))
+                        .toList(),
+                partida.ganadorId());
     }
 
     private boolean puedeAvanzar(Partida partida, Jugador yo) {

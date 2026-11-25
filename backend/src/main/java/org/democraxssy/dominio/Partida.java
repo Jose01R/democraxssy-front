@@ -17,6 +17,8 @@ public class Partida {
     private Mazo<CartaBlanca> mazoBlancas;
     private Mazo<CartaNegra> mazoNegras;
     private Ronda ronda;
+    private final List<ResultadoRonda> historial = new ArrayList<>();
+    private String ganadorId;
 
     public Partida(String id, String anfitrionId, int puntosParaGanar) {
         this.id = id;
@@ -76,5 +78,21 @@ public class Partida {
 
     public void ronda(Ronda ronda) {
         this.ronda = ronda;
+    }
+
+    public List<ResultadoRonda> historial() {
+        return historial;
+    }
+
+    public void agregarAlHistorial(ResultadoRonda resultado) {
+        historial.add(resultado);
+    }
+
+    public String ganadorId() {
+        return ganadorId;
+    }
+
+    public void ganadorId(String ganadorId) {
+        this.ganadorId = ganadorId;
     }
 }
