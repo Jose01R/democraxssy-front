@@ -11,6 +11,7 @@ Respaldo para `DECISIONES.md` y la defensa. Requisitos del enunciado que cubre: 
 | `05-estado-actual.txt` | Estado verificado: `terraform plan` sin cambios, HTTP y HTTPS, certificado, seguridad, memoria, puertos |
 | `06-despliegue-y-rollback.txt` | `deploy.ps1` funcionando y el rollback automático ante un `.jar` roto |
 | `07-pruebas-http-https.md` y `07-pruebas/` | Pruebas del contrato contra el servidor del profesor y el nuestro, por HTTPS, HTTP y HTTP vía el proxy del frontend |
+| `08-memoria.md` | Memoria del servicio y de la VM con muchas partidas abiertas. Lo genera `tools/prueba-memoria.ps1` cuando el backend esté completo (fase E) |
 | `capturas/` | Capturas de la consola de OCI, DuckDNS y el navegador (ver abajo) |
 
 ## Datos clave
