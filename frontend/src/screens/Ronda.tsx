@@ -19,6 +19,7 @@ import {
   eliminar,
 } from "../state/partida";
 import { Cenicero, JarraCerveza, PilaRespuestas, TazaCafe } from "../components/DecoracionMesa";
+import { IndicadorConexion } from "../components/IndicadorConexion";
 
 // Divide la carta negra en texto y espacios en blanco (marcados con "____").
 // Cada espacio se llena, en orden, con las cartas elegidas. Todo se pinta
@@ -226,6 +227,7 @@ export function Ronda() {
             <span className="info-pill">Ronda {ronda.numero}</span>
           )}
           <span className="info-pill">Meta: {partida.puntos_para_ganar} pts</span>
+          <IndicadorConexion />
         </div>
       </div>
 
