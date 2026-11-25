@@ -129,7 +129,7 @@ export function Configuracion({
                     key={preset.url}
                     type="button"
                     className="server-preset"
-                    onClick={() => setValue("backendUrl", preset.url)}
+                    onClick={() => setValue("backendUrl", preset.url, { shouldValidate: true })}
                   >
                     {preset.label}
                   </button>
