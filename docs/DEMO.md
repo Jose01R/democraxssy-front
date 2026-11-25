@@ -25,7 +25,7 @@ Duración total: **15:00 minutos**.
 
 - [ ] Preparar tres ventanas o grupos de pestañas independientes:
   - **Grupo A:** cuatro pestañas para la partida HTTPS; todas en Configuración con el preset **Nuestro backend (HTTPS)**.
-  - **Grupo B:** cuatro pestañas nuevas para la partida HTTP vía proxy; después del despliegue, dejarlas unidas a una sala de prueba para poder empezar el flujo de ronda sin demoras.
+  - **Grupo B:** cuatro pestañas nuevas para la partida HTTP vía proxy, todas con ese preset seleccionado y listas en Configuración. Joel crea y prepara la partida durante el Bloque 3.
   - **Grupo C:** una o dos pestañas para el servidor del profesor, en Configuración con **Servidor del profesor**.
 - [ ] Cada pestaña debe tener su propia sesión de jugador en `sessionStorage`. No reutilizar las pestañas de una partida activa para cambiar de servidor: `App.tsx` muestra `Ronda` mientras haya una partida y no ofrece **Cambiar servidor** desde esa pantalla.
 - [ ] Preparar el `.jar` que se va a desplegar y verificar acceso SSH/OCI a la VM `democraxssy-back-e2`; la sesión debe estar lista antes de la defensa.
@@ -119,6 +119,16 @@ Debe mostrar los códigos HTTP devueltos; comprobar que ambos son 2xx antes de c
 
 Usar meta de **1 punto** para que la primera decisión finalice la partida y la pantalla `terminada` muestre al ganador. La meta 2 es una variante si se prioriza mostrar resultado de ronda y rotación del soberano; no intentar hacer ambas variantes dentro de estos cuatro minutos.
 
+### Preparación paralela del Grupo B
+
+Mientras Paolo conduce la partida HTTPS, **Joel prepara la partida HTTP** en las cuatro pestañas del Grupo B. El despliegue ya terminó en el Bloque 2, por lo que la sala no se perderá por un reinicio:
+
+1. En la primera pestaña, seleccionar **Nuestro backend (HTTP vía proxy)**, elegir meta 1 y pulsar **Crear partida nueva**.
+2. En las otras tres pestañas, seleccionar el mismo preset y unirse usando el ID de esa partida.
+3. Cuando haya cuatro jugadores, el anfitrión inicia la partida. Dejar la sesión en fase `respuestas`, sin enviar cartas todavía.
+
+Al comenzar el Bloque 4, la partida debe estar iniciada y sus cuatro pestañas deben conservar la sesión independiente.
+
 | Tiempo | Acción y explicación |
 |---|---|
 | 0:00–0:20 | En las cuatro pestañas, comprobar **Nuestro backend (HTTPS)**. Completar nombres diferentes y el health check `HEAD /api/salud`; debe mostrar **Mesa Verificada** / **Conexión verificada · HTTP 200**. |
@@ -134,13 +144,13 @@ Usar meta de **1 punto** para que la primera decisión finalice la partida y la 
 
 ## Bloque 4 — Partida por HTTP vía proxy (1:30)
 
-**Responsable: Paolo.** Cambiar al Grupo B nuevo, con las cuatro sesiones ya unidas a una sala de prueba creada después del despliegue. El preset debe ser **Nuestro backend (HTTP vía proxy)**. No cambiar el servidor en las pestañas de la partida activa.
+**Responsable: Paolo.** Usar el Grupo B que Joel preparó en paralelo al Bloque 3: cuatro sesiones unidas y partida ya iniciada en fase `respuestas`. No cambiar el servidor en las pestañas de la partida HTTPS activa.
 
 URL seleccionada: `http://api-democraxssy-if6000.duckdns.org`.
 
 - **0:00–0:20:** señalar el preset exacto y el indicador **“Conexión vía proxy (HTTP)”**.
 - **0:20–0:50:** explicar que `frontend/src/api/client.ts` convierte el destino HTTP en una petición relativa `/api/http/api-democraxssy-if6000.duckdns.org/api/...`. Así la página HTTPS no hace una petición HTTP activa directa y no aparece el error de *Mixed Content*.
-- **0:50–1:15:** ejecutar una respuesta o voto en la sesión HTTP y comprobar que la ronda opera con normalidad.
+- **0:50–1:15:** enviar una respuesta desde una pestaña que no sea la del soberano; comprobar que la ronda HTTP opera con normalidad.
 - **1:15–1:30:** aclarar que este backend atiende HTTP en el puerto 80 sin HSTS ni redirección automática. El servidor del profesor no sirve HTTP (Akamai responde 501); la demostración HTTP se limita intencionalmente a nuestro backend.
 
 ## Bloque 5 — Interoperabilidad con el servidor del profesor (1:30)
