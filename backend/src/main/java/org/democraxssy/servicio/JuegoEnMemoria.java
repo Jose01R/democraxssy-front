@@ -1,5 +1,6 @@
 package org.democraxssy.servicio;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -11,6 +12,7 @@ import org.democraxssy.dominio.Jugador;
 import org.democraxssy.dominio.Mazo;
 import org.democraxssy.dominio.Mazos;
 import org.democraxssy.dominio.Partida;
+import org.democraxssy.dominio.Respuesta;
 import org.democraxssy.dominio.Ronda;
 import org.democraxssy.dto.JugadorPublico;
 import org.democraxssy.dto.Sesion;
@@ -133,7 +135,52 @@ public class JuegoEnMemoria implements JuegoServicio {
 
     @Override
     public Vista responder(String partidaId, String token, List<Integer> cartas) {
-        throw new UnsupportedOperationException("pendiente: Fase B tarea 7");
+        Partida partida = repositorio.obtener(partidaId);
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            if (partida.fase() != Fase.RESPUESTAS) {
+                throw new ConflictoException("No es la fase de respuestas.");
+            }
+            Ronda ronda = partida.ronda();
+            if (yo.id().equals(ronda.soberanoId())) {
+                throw new ProhibidoException("El soberano no responde.");
+            }
+            if (ronda.yaRespondio(yo.id())) {
+                throw new ConflictoException("Ya respondiste en esta ronda.");
+            }
+            int elegir = ronda.cartaNegra().elegir();
+            validarCantidadDeCartas(cartas, elegir);
+            List<CartaBlanca> jugadas = quitarDeLaMano(yo, cartas);
+            ronda.agregarRespuesta(new Respuesta(Ids.respuesta(), yo.id(), jugadas));
+            if (ronda.respuestas().size() == partida.jugadores().size() - 1) {
+                ronda.barajarRespuestas(rng);
+                partida.fase(Fase.VOTACION);
+            }
+            return vistaPara(partida, yo);
+        }
+    }
+
+    private static void validarCantidadDeCartas(List<Integer> cartas, int elegir) {
+        if (cartas == null || cartas.size() != elegir) {
+            throw new DatosInvalidosException("Debes jugar exactamente " + elegir + " carta(s).");
+        }
+        if (cartas.stream().distinct().count() != cartas.size()) {
+            throw new DatosInvalidosException("No puedes repetir cartas.");
+        }
+    }
+
+    /** Resuelve todas las cartas en la mano (en orden) antes de quitarlas, para no dejar estado a medias. */
+    private static List<CartaBlanca> quitarDeLaMano(Jugador yo, List<Integer> ids) {
+        List<CartaBlanca> jugadas = new ArrayList<>();
+        for (int id : ids) {
+            CartaBlanca carta = yo.mano().stream()
+                    .filter(c -> c.id() == id)
+                    .findFirst()
+                    .orElseThrow(() -> new DatosInvalidosException("La carta " + id + " no esta en tu mano."));
+            jugadas.add(carta);
+        }
+        yo.mano().removeAll(jugadas);
+        return jugadas;
     }
 
     @Override
@@ -190,7 +237,7 @@ public class JuegoEnMemoria implements JuegoServicio {
                         j.id(), j.nombre(), j.puntos(),
                         partida.esAnfitrion(j),
                         j.id().equals(soberanoId),
-                        false, // ya_respondio (Tarea 7)
+                        ronda != null && ronda.yaRespondio(j.id()),
                         false)) // ya_voto (Tarea 8)
                 .toList();
         Yo yoDto = (yo == null) ? null
@@ -221,7 +268,7 @@ public class JuegoEnMemoria implements JuegoServicio {
                 ronda.numero(),
                 ronda.soberanoId(),
                 ronda.cartaNegra(),
-                0, // respuestas_recibidas (Tarea 7)
+                ronda.respuestas().size(),
                 0, // votos_emitidos (Tarea 8)
                 List.of(), // respuestas (revelado, Tarea 10)
                 List.of(), // favoritas_del_pueblo (Tarea 8)
