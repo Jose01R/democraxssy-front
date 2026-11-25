@@ -43,15 +43,31 @@ completa en tests sin tocar HTTP**.
 
 ## Enfoque (approaches considerados)
 
-1. **Dominio puro sin Spring** *(elegido)*: paquete `org.democraxssy.dominio` con POJOs y un
-   motor de estados como lógica pura; registro en memoria detrás de una interfaz. Spring solo lo
-   envuelve en la Fase C. Testeable con JUnit puro, sin contexto.
-2. **Servicios Spring entrelazados** *(descartado)*: más rápido de cablear a HTTP, pero cuesta
-   testear sin contexto y mezcla capas; va contra el criterio de la fase.
+1. **Por capas con dominio anémico** *(elegido)*: `dominio/` tiene solo **entidades (datos)** y
+   `servicio/` tiene **la lógica** (`JuegoServicio`: motor de estados, reglas, puntuación, mazo,
+   revelado). El `servicio` es Java plano, sin dependencias web; se instancia directo en los tests,
+   **sin contexto de Spring**. En Fase C puede llevar `@Service` para el wiring. Preserva el objetivo
+   de la fase (testear sin HTTP) y es la estructura que el equipo prefiere.
+2. **Dominio rico (lógica en las entidades)** *(descartado)*: cohesivo, pero el equipo prefiere
+   separar entidades de lógica en capas.
 3. **Event sourcing / command bus** *(descartado)*: sobreingeniería para estado en memoria de un
    proyecto de curso.
 
 ## Decisiones de diseño (el "cómo")
+
+### Estructura de paquetes
+```
+org.democraxssy
+├── dominio/       entidades (datos): Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo
+├── servicio/      lógica: JuegoServicio (motor de estados, reglas, puntuación, mazo, revelado) + Ids, CargadorMazo
+├── repositorio/   RepositorioPartidas (interface) + RepositorioEnMemoria
+├── controllers/   @RestController HTTP (Fase C) + SaludController
+├── web/           CorsFilter, ManejadorErrores, dto/, mapeo/
+├── errores/       ConflictoException, ProhibidoException, DatosInvalidosException, NoEncontradoException
+└── config/        wiring (cargar cartas.json, beans)
+```
+Las entidades de `dominio/` son datos (con validación básica de sus invariantes, sin flujo de juego).
+Toda la lógica de juego vive en `servicio/JuegoServicio`, que recibe/opera sobre esas entidades.
 
 ### Identificadores
 `partida_id` 32 hex · `jugador_id` 16 hex · `token` 64 hex · `respuesta_id` 12 hex. Generados con

@@ -4,7 +4,19 @@
 
 **Goal:** Construir el núcleo del juego democraXSSy en memoria (modelo, máquina de estados, puntuación, mazos), testeable por completo sin HTTP.
 
-**Architecture:** Dominio puro en `org.democraxssy.dominio`, sin Spring. Un motor de estados opera sobre objetos `Partida`; un registro en memoria los guarda. Las acciones inválidas lanzan excepciones de dominio tipadas que la Fase D mapeará a códigos HTTP.
+**Architecture:** Por capas. `dominio/` son entidades (datos); `servicio/JuegoServicio` tiene toda la lógica (motor de estados, reglas, puntuación, mazo, revelado), es Java plano y se instancia directo en los tests sin contexto de Spring; `repositorio/` guarda las partidas en memoria. Las acciones inválidas lanzan excepciones tipadas (`errores/`) que la Fase D mapeará a códigos HTTP.
+
+## Estructura de paquetes y convención
+
+```
+org.democraxssy
+├── dominio/       entidades: Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo
+├── servicio/      JuegoServicio (lógica) + Ids + CargadorMazo
+├── repositorio/   RepositorioPartidas (interface) + RepositorioEnMemoria
+└── errores/       excepciones de dominio
+```
+
+**Convención de lectura de las tareas:** las entidades de `dominio/` son datos. **Todas las operaciones son métodos de `servicio/JuegoServicio`** que reciben la `Partida` (o su id). Donde una tarea diga `Partida.crear(...)` / `p.unirse(...)`, léase `juego.crear(...)` / `juego.unirse(p, ...)`. Las firmas exactas de cada operación están en el bloque *Interfaces* de su tarea.
 
 **Tech Stack:** Java 21, JUnit 5 (de `spring-boot-starter-webmvc-test`, ya presente), Jackson (del starter) solo para cargar `cartas.json`. Sin dependencias nuevas.
 
