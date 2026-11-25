@@ -24,7 +24,7 @@ Respaldo para `DECISIONES.md` y la defensa. Requisitos del enunciado que cubre: 
 | Seguridad | SELinux enforcing, firewalld (ssh, http, https), SSH solo con llave y sin root |
 | Costo | $0 (Always Free); el crédito de $300 queda intacto |
 
-## Capturas pendientes (`capturas/`)
+## Capturas (`capturas/`)
 
 1. **OCI → Compute → Instances:** las dos VM (`democraxssy-web-e2` y `democraxssy-back-e2`) en `Running`.
 2. **OCI → la VM del backend → Metrics:** CPU y memoria (para "uso racional de recursos").

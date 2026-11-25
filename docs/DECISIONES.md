@@ -93,7 +93,7 @@
   - `infra/compute.tf`: recurso `oci_core_instance.backend_instance` con shape `"VM.Standard.E2.1.Micro"` y hostname `"democraxssy-back"`.
   - `infra/public-ip.tf`: recurso `oci_core_public_ip.backend_ip` con `lifetime = "RESERVED"`, asignando la IP pública fija `157.151.151.205`.
   - `infra/variables.tf`: configuración de variables `compartment_ocid` (`IF6000-26-GUI`) y `subnet_ocid` (`10.0.8.0/24`).
-  - `infra/evidencia/capturas/01-oci-instancias.png` (muestra activas `instancia-front` y `democraxssy-back-e2`) y `infra/evidencia/capturas/03-oci-ip-reservada.png`.
+  - `infra/evidencia/capturas/01-oci-instancias.png` (muestra activas `democraxssy-web-e2`, la del frontend, y `democraxssy-back-e2`) y `infra/evidencia/capturas/03-oci-ip-reservada.png`.
 - **Responsable:** Joel.
 
 ---
