@@ -4,10 +4,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
+import org.democraxssy.dominio.CartaBlanca;
+import org.democraxssy.dominio.CartaNegra;
 import org.democraxssy.dominio.Fase;
 import org.democraxssy.dominio.Jugador;
+import org.democraxssy.dominio.Mazo;
 import org.democraxssy.dominio.Mazos;
 import org.democraxssy.dominio.Partida;
+import org.democraxssy.dominio.Ronda;
 import org.democraxssy.dto.JugadorPublico;
 import org.democraxssy.dto.Sesion;
 import org.democraxssy.dto.Vista;
@@ -93,9 +97,38 @@ public class JuegoEnMemoria implements JuegoServicio {
         repositorio.eliminar(partidaId);
     }
 
+    private static final int CARTAS_EN_MANO = 7;
+
     @Override
     public Vista iniciar(String partidaId, String token) {
-        throw new UnsupportedOperationException("pendiente: Fase B tarea 6");
+        Partida partida = repositorio.obtener(partidaId);
+        synchronized (partida) {
+            Jugador yo = jugadorPorToken(partida, token);
+            if (!partida.esAnfitrion(yo)) {
+                throw new ProhibidoException("Solo el anfitrion puede iniciar la partida.");
+            }
+            if (partida.fase() != Fase.SALA) {
+                throw new ConflictoException("La partida ya inicio.");
+            }
+            int n = partida.jugadores().size();
+            if (n < 4 || n > MAX_JUGADORES) {
+                throw new ConflictoException("Se necesitan entre 4 y " + MAX_JUGADORES + " jugadores.");
+            }
+            if (n % 2 != 0) {
+                throw new ConflictoException("El numero de jugadores debe ser par.");
+            }
+            Mazo<CartaBlanca> blancas = new Mazo<>(mazos.blancas(), rng);
+            Mazo<CartaNegra> negras = new Mazo<>(mazos.negras(), rng);
+            partida.iniciarMazos(blancas, negras);
+            for (Jugador jugador : partida.jugadores()) {
+                for (int i = 0; i < CARTAS_EN_MANO; i++) {
+                    jugador.mano().add(blancas.robar());
+                }
+            }
+            partida.ronda(new Ronda(1, partida.anfitrionId(), negras.robar()));
+            partida.fase(Fase.RESPUESTAS);
+            return vistaPara(partida, yo);
+        }
     }
 
     @Override
@@ -150,25 +183,48 @@ public class JuegoEnMemoria implements JuegoServicio {
     }
 
     private Vista vistaPara(Partida partida, Jugador yo) {
+        Ronda ronda = partida.ronda();
+        String soberanoId = (ronda == null) ? null : ronda.soberanoId();
         List<JugadorPublico> jugadores = partida.jugadores().stream()
                 .map(j -> new JugadorPublico(
                         j.id(), j.nombre(), j.puntos(),
                         partida.esAnfitrion(j),
-                        false, // es_soberano: no hay ronda en sala
-                        false, // ya_respondio
-                        false)) // ya_voto
+                        j.id().equals(soberanoId),
+                        false, // ya_respondio (Tarea 7)
+                        false)) // ya_voto (Tarea 8)
                 .toList();
         Yo yoDto = (yo == null) ? null
-                : new Yo(yo.id(), yo.nombre(), List.copyOf(yo.mano()), null, partida.esAnfitrion(yo));
+                : new Yo(yo.id(), yo.nombre(), List.copyOf(yo.mano()), null, puedeAvanzar(partida, yo));
         return new Vista(
                 partida.id(),
                 partida.fase().contrato(),
                 partida.anfitrionId(),
                 partida.puntosParaGanar(),
                 jugadores,
-                null, // ronda: null en sala
+                rondaDto(partida),
                 yoDto,
-                List.of(), // historial
-                null); // ganador_id
+                List.of(), // historial (Tarea 9)
+                null); // ganador_id (Tarea 9)
+    }
+
+    private boolean puedeAvanzar(Partida partida, Jugador yo) {
+        Ronda ronda = partida.ronda();
+        return partida.esAnfitrion(yo) || (ronda != null && yo.id().equals(ronda.soberanoId()));
+    }
+
+    private org.democraxssy.dto.Ronda rondaDto(Partida partida) {
+        Ronda ronda = partida.ronda();
+        if (ronda == null) {
+            return null;
+        }
+        return new org.democraxssy.dto.Ronda(
+                ronda.numero(),
+                ronda.soberanoId(),
+                ronda.cartaNegra(),
+                0, // respuestas_recibidas (Tarea 7)
+                0, // votos_emitidos (Tarea 8)
+                List.of(), // respuestas (revelado, Tarea 10)
+                List.of(), // favoritas_del_pueblo (Tarea 8)
+                null); // ganadora (Tarea 9)
     }
 }

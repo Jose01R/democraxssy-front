@@ -14,6 +14,9 @@ public class Partida {
     private final int puntosParaGanar;
     private Fase fase = Fase.SALA;
     private final List<Jugador> jugadores = new ArrayList<>(); // orden de llegada
+    private Mazo<CartaBlanca> mazoBlancas;
+    private Mazo<CartaNegra> mazoNegras;
+    private Ronda ronda;
 
     public Partida(String id, String anfitrionId, int puntosParaGanar) {
         this.id = id;
@@ -52,5 +55,26 @@ public class Partida {
 
     public boolean esAnfitrion(Jugador jugador) {
         return jugador.id().equals(anfitrionId);
+    }
+
+    public void iniciarMazos(Mazo<CartaBlanca> mazoBlancas, Mazo<CartaNegra> mazoNegras) {
+        this.mazoBlancas = mazoBlancas;
+        this.mazoNegras = mazoNegras;
+    }
+
+    public Mazo<CartaBlanca> mazoBlancas() {
+        return mazoBlancas;
+    }
+
+    public Mazo<CartaNegra> mazoNegras() {
+        return mazoNegras;
+    }
+
+    public Ronda ronda() {
+        return ronda;
+    }
+
+    public void ronda(Ronda ronda) {
+        this.ronda = ronda;
     }
 }
