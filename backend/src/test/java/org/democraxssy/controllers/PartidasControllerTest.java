@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -211,5 +212,42 @@ class PartidasControllerTest {
         mvc.perform(delete("/api/partidas/" + PARTIDA).header("Authorization", BEARER))
                 .andExpect(status().isForbidden())
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
+    }
+
+    @Test
+    void errorInesperadoDa500SinDetalles() throws Exception {
+        when(juego.obtenerPartida(PARTIDA, Optional.empty())).thenThrow(new IllegalStateException("detalle interno"));
+
+        mvc.perform(get("/api/partidas/" + PARTIDA))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Error interno del servidor"))
+                .andExpect(jsonPath("$.trace").doesNotExist())
+                .andExpect(header().string("Access-Control-Allow-Origin", "*"));
+    }
+
+    @Test
+    void servicioPendienteDa500ConFormatoDelContrato() throws Exception {
+        when(juego.crearPartida(anyString(), any())).thenThrow(new UnsupportedOperationException("pendiente"));
+
+        mvc.perform(post("/api/partidas").contentType(MediaType.APPLICATION_JSON).content("{\"nombre\":\"Ana\"}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Error interno del servidor"));
+    }
+
+    @Test
+    void contentTypeNoSoportadoNoEsUn500() throws Exception {
+        mvc.perform(post("/api/partidas").contentType(MediaType.TEXT_PLAIN).content("hola"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.error").exists())
+                .andExpect(header().string("Access-Control-Allow-Origin", "*"));
+        verifyNoInteractions(juego);
+    }
+
+    @Test
+    void metodoNoSoportadoNoEsUn500() throws Exception {
+        mvc.perform(put("/api/partidas"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.error").exists());
+        verifyNoInteractions(juego);
     }
 }
