@@ -58,16 +58,19 @@ completa en tests sin tocar HTTP**.
 ### Estructura de paquetes
 ```
 org.democraxssy
-├── dominio/       entidades (datos): Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo
-├── servicio/      lógica: JuegoServicio (motor de estados, reglas, puntuación, mazo, revelado) + Ids, CargadorMazo
+├── dominio/       entidades (datos): Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo, Mazos
+├── dto/           DTOs del contrato (paquete neutral): Sesion, Vista, JugadorPublico, Yo, Ronda, RespuestaRevelada, ResumenRonda
+├── servicio/      lógica: JuegoServicio (interfaz) + JuegoEnMemoria (impl) + Ids, CargadorMazo
 ├── repositorio/   RepositorioPartidas (interface) + RepositorioEnMemoria
 ├── controllers/   @RestController HTTP (Fase C) + SaludController
-├── web/           CorsFilter, ManejadorErrores, dto/, mapeo/
-├── errores/       ConflictoException, ProhibidoException, DatosInvalidosException, NoEncontradoException
+├── web/           CorsFilter, ManejadorErrores (sin capa de mapeo)
+├── errores/       NoAutenticado, Prohibido, DatosInvalidos, NoEncontrado, Conflicto
 └── config/        wiring (cargar cartas.json, beans)
 ```
-Las entidades de `dominio/` son datos (con validación básica de sus invariantes, sin flujo de juego).
-Toda la lógica de juego vive en `servicio/JuegoServicio`, que recibe/opera sobre esas entidades.
+Las entidades de `dominio/` son datos. Toda la lógica vive en `servicio/`. **`JuegoServicio` es una
+interfaz** (impl `JuegoEnMemoria`) para que la capa web la mockee en sus tests. El servicio **devuelve
+los DTOs de `dto/` ya filtrados por jugador** (revelado en un solo lugar); Jackson los serializa directo
+al contrato, así que no hay capa de mapeo. Acordado con Joel (controllers de Fase C divididos).
 
 ### Identificadores
 `partida_id` 32 hex · `jugador_id` 16 hex · `token` 64 hex · `respuesta_id` 12 hex. Generados con

@@ -10,13 +10,26 @@
 
 ```
 org.democraxssy
-├── dominio/       entidades: Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo
-├── servicio/      JuegoServicio (lógica) + Ids + CargadorMazo
+├── dominio/       entidades: Partida, Jugador, Ronda, Carta*, Respuesta, ResumenRonda, Fase, Mazo, Mazos
+├── dto/           DTOs del contrato (neutral): Sesion, Vista, JugadorPublico, Yo, Ronda, RespuestaRevelada, ResumenRonda
+├── servicio/      JuegoServicio (interfaz) + JuegoEnMemoria (impl) + Ids + CargadorMazo
 ├── repositorio/   RepositorioPartidas (interface) + RepositorioEnMemoria
 └── errores/       excepciones de dominio
 ```
 
-**Convención de lectura de las tareas:** las entidades de `dominio/` son datos. **Todas las operaciones son métodos de `servicio/JuegoServicio`** que reciben la `Partida` (o su id). Donde una tarea diga `Partida.crear(...)` / `p.unirse(...)`, léase `juego.crear(...)` / `juego.unirse(p, ...)`. Las firmas exactas de cada operación están en el bloque *Interfaces* de su tarea.
+**Convención (acuerdo con Joel):** las entidades de `dominio/` son datos. **Todas las operaciones son métodos de la interfaz `servicio/JuegoServicio`** (impl `JuegoEnMemoria`), que **devuelven los DTOs de `dto/`** (`Sesion`/`Vista`) ya filtrados por jugador. Firmas acordadas:
+```java
+Sesion crearPartida(String nombre, Integer puntosParaGanar);
+Sesion unirse(String partidaId, String nombre);
+Vista  obtenerPartida(String partidaId, Optional<String> token);
+void   eliminarPartida(String partidaId, String token);
+Vista  iniciar(String partidaId, String token);
+Vista  responder(String partidaId, String token, List<Integer> cartas);
+Vista  votar(String partidaId, String token, String respuestaId);
+Vista  decidir(String partidaId, String token, String respuestaId);
+Vista  avanzar(String partidaId, String token);
+```
+Donde una tarea diga `Partida.crear(...)` / `p.unirse(...)`, léase `juego.crearPartida(...)` / `juego.unirse(id, ...)`.
 
 **Tech Stack:** Java 21, JUnit 5 (de `spring-boot-starter-webmvc-test`, ya presente), Jackson (del starter) solo para cargar `cartas.json`. Sin dependencias nuevas.
 
