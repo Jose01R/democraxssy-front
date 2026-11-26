@@ -38,9 +38,10 @@ class JsonDuplicadosTest {
     }
 
     @Test
-    void cuerpoMalFormadoSigueDando400() throws Exception {
+    void cuerpoMalFormadoTambienDa409() throws Exception {
         String cuerpo = "{\"nombre\":";
         mvc.perform(post("/api/partidas").contentType(MediaType.APPLICATION_JSON).content(cuerpo))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("Cuerpo JSON invalido o inesperado."));
     }
 }
