@@ -235,9 +235,9 @@ class PartidasControllerTest {
     }
 
     @Test
-    void contentTypeNoSoportadoNoEsUn500() throws Exception {
+    void contentTypeNoSoportadoDa409() throws Exception {
         mvc.perform(post("/api/partidas").contentType(MediaType.TEXT_PLAIN).content("hola"))
-                .andExpect(status().is4xxClientError())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").exists())
                 .andExpect(header().string("Access-Control-Allow-Origin", "*"));
         verifyNoInteractions(juego);
@@ -248,6 +248,24 @@ class PartidasControllerTest {
         mvc.perform(put("/api/partidas"))
                 .andExpect(status().is4xxClientError())
                 .andExpect(jsonPath("$.error").exists());
+        verifyNoInteractions(juego);
+    }
+
+    @Test
+    void crearSinNombreDa409() throws Exception {
+        mvc.perform(post("/api/partidas").contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").exists());
+        mvc.perform(post("/api/partidas").contentType(MediaType.APPLICATION_JSON).content("{\"nombre\":null}"))
+                .andExpect(status().isConflict());
+        verifyNoInteractions(juego);
+    }
+
+    @Test
+    void unirseSinNombreDa409() throws Exception {
+        mvc.perform(post("/api/partidas/" + PARTIDA + "/jugadores")
+                        .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isConflict());
         verifyNoInteractions(juego);
     }
 }

@@ -23,9 +23,22 @@ import jakarta.servlet.http.HttpServletRequest;
 public class PartidasController {
 
     public record NuevaPartida(String nombre, @JsonProperty("puntos_para_ganar") Integer puntosParaGanar) {
+        public NuevaPartida {
+            exigirNombre(nombre);
+        }
     }
 
     public record NuevoJugador(String nombre) {
+        public NuevoJugador {
+            exigirNombre(nombre);
+        }
+    }
+
+    /** Sin nombre el cuerpo no cumple el contrato: Jackson lo reporta como cuerpo ilegible y responde 409. */
+    private static void exigirNombre(String nombre) {
+        if (nombre == null) {
+            throw new IllegalArgumentException("Falta el campo obligatorio nombre");
+        }
     }
 
     private final JuegoServicio juego;
