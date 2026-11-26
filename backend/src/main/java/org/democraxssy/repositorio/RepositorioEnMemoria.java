@@ -1,5 +1,6 @@
 package org.democraxssy.repositorio;
 
+import java.time.Instant;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,11 +23,19 @@ public class RepositorioEnMemoria implements RepositorioPartidas {
         if (partida == null) {
             throw new NoEncontradoException("Partida no encontrada.");
         }
+        partida.ultimaActividad(Instant.now()); // toda operacion pasa por aqui: renueva actividad
         return partida;
     }
 
     @Override
     public void eliminar(String id) {
         partidas.remove(id);
+    }
+
+    @Override
+    public int eliminarInactivas(Instant limite) {
+        int antes = partidas.size();
+        partidas.values().removeIf(partida -> partida.ultimaActividad().isBefore(limite));
+        return antes - partidas.size();
     }
 }
