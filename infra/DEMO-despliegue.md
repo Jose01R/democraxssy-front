@@ -1,4 +1,4 @@
-# Guion: despliegue en caliente del backend (entrega)
+# Guion: infraestructura y despliegue en caliente del backend (defensa)
 
 Objetivo: mostrar en vivo que la infraestructura del backend está definida como código (Terraform), que coincide con lo desplegado, y que una versión nueva del backend se publica con un comando, verificada por HTTP y HTTPS.
 
@@ -8,7 +8,7 @@ Duración: unos 8 minutos. Lo presenta Joel.
 
 ## Antes de la presentación (30 min antes)
 
-- [ ] `.jar` final del backend compilado: `cd backend` → `.\mvnw.cmd package`.
+- [ ] `.jar` final del backend compilado desde `main`: `cd backend`, borrar `target\classes\org` y `target\test-classes` (o `mvnw clean`, si OneDrive lo permite) y `.\mvnw.cmd package`.
 - [ ] VS Code abierto en `democraxssy-front`, terminal en `infra\`.
 - [ ] Probar que Terraform autentica: `terraform plan` → `No changes`.
 - [ ] Llave SSH con permisos correctos (si `deploy.ps1` dice *bad permissions*):
@@ -18,7 +18,8 @@ Duración: unos 8 minutos. Lo presenta Joel.
   2. API: `https://api-democraxssy-if6000.duckdns.org/api/salud`
   3. Consola de OCI → *Compute → Instances* (las dos VM)
   4. Consola de OCI → VM del backend → *Monitoring* (CPU y memoria)
-- [ ] Correr una vez `node tools/pruebas-contrato.mjs https://api-democraxssy-if6000.duckdns.org` para saber cómo está.
+- [ ] `.\servicio.ps1 estado` → `Servicio: active` y `200` por HTTP y HTTPS.
+- [ ] Prueba rápida: `node tools/partida-completa.mjs https://api-democraxssy-if6000.duckdns.org` → todo `OK`.
 
 > **Importante:** el backend guarda las partidas en memoria. **Desplegar reinicia el servicio y borra las partidas en curso.** Hacer el despliegue **antes** de la partida de demostración, nunca durante.
 
@@ -46,7 +47,32 @@ Resultado esperado: **`No changes. Your infrastructure matches the configuration
 
 Mostrar la pestaña de *Instances* en OCI: `democraxssy-back-e2` en *Running*, Always Free.
 
-### 3. Despliegue en caliente (2 min)
+### 3. Bajar y levantar el backend en caliente (1 min)
+
+```powershell
+.\servicio.ps1 estado
+.\servicio.ps1 detener
+```
+Salida esperada al detener:
+```
+Backend detenido.
+Servicio:  inactive
+Nginx:     active
+Desde Internet:
+  http://api-democraxssy-if6000.duckdns.org/api/salud     502
+  https://api-democraxssy-if6000.duckdns.org/api/salud    502
+```
+> "Detuvimos solo el proceso Java. Nginx sigue arriba y responde 502 porque no tiene backend detrás; la VM y la red no se tocan."
+
+En el frontend, la verificación de **Nuestro backend (HTTPS)** falla. Después:
+```powershell
+.\servicio.ps1 iniciar
+```
+Salida esperada: `Backend arriba: HEAD /api/salud -> 200 (tras ~18 s)` y `200` por HTTP y HTTPS. En el frontend vuelve a salir **Mesa Verificada**.
+
+> "Si el proceso se cae solo, systemd lo reinicia (`Restart=on-failure`); esto es para hacerlo a mano."
+
+### 4. Despliegue en caliente (2 min)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\deploy.ps1 -Jar ..\backend\target\backend-0.0.1-SNAPSHOT.jar
@@ -56,7 +82,7 @@ Salida esperada:
 1/3 Subiendo ... a 157.151.151.205...
 2/3 Instalando y reiniciando el servicio...
 Backend arriba: HEAD /api/salud -> 200 (tras ~18 s)
-Memoria del servicio: ~175 MB
+Memoria del servicio: ~140 MB
 3/3 Verificando desde Internet...
   http://api-democraxssy-if6000.duckdns.org/api/salud     200
   https://api-democraxssy-if6000.duckdns.org/api/salud    200
@@ -64,7 +90,7 @@ Listo.
 ```
 > "Sube el `.jar`, guarda la versión anterior, reinicia el servicio y espera a que responda. Si no responde en 120 s, vuelve solo a la versión anterior. Al final verifica desde Internet por HTTP y por HTTPS."
 
-### 4. HTTP y HTTPS (2 min)
+### 5. HTTP y HTTPS (2 min)
 
 ```powershell
 curl.exe -sI http://api-democraxssy-if6000.duckdns.org/api/salud
@@ -76,10 +102,10 @@ En el frontend:
 1. Botón **Nuestro backend (HTTPS)** → crear partida → en el panel de llamadas se ve la URL `https://api-...` (conexión directa).
 2. Botón **Nuestro backend (HTTP vía proxy)** → crear partida → se ve `/api/http/api-...` (el navegador no permite HTTP desde una página HTTPS; el Nginx del frontend hace de puente).
 
-### 5. Recursos (1 min)
+### 6. Recursos (1 min)
 
 Pestaña *Monitoring* de la VM: CPU baja, memoria estable.
-> "Una VM de 1 GB Always Free: el backend usa unos 175 MB con la JVM limitada a 256 MB. Costo: cero."
+> "Una VM de 1 GB Always Free: el backend usa entre 140 y 190 MB, con la JVM limitada a 256 MB y el servicio a 500 MB. Con 2200 jugadores en 100 partidas no pasó de 187 MB. Costo: cero."
 
 ---
 

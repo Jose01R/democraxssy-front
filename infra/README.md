@@ -119,6 +119,15 @@ El script:
 3. Espera hasta 120 s a que `HEAD /api/salud` responda 2xx. Si no responde, **vuelve a la versión anterior** (rollback) y muestra el log.
 4. Verifica la API desde Internet por HTTP y HTTPS.
 
+Para bajar, levantar o consultar el backend sin desplegar nada (las partidas en memoria se pierden al detenerlo):
+
+```powershell
+.\servicio.ps1 estado      # activo, memoria y salud por HTTP y HTTPS
+.\servicio.ps1 detener     # Nginx queda arriba y responde 502
+.\servicio.ps1 iniciar     # espera a que /api/salud responda 200
+.\servicio.ps1 reiniciar
+```
+
 En `prueba/` hay un backend mínimo (`backend-prueba.jar`, fuente en `Stub.java`, sin Spring) que responde `200` en `/api/salud`. Sirve para probar la infraestructura sin el backend real.
 
 ## Notas

@@ -17,7 +17,7 @@
 - **Evidencia:**
   - `backend/pom.xml`: declaración de `<java.version>21</java.version>`, dependencia `spring-boot-starter-webmvc` y versión del padre `spring-boot-starter-parent` `4.2.0`.
   - `backend/src/main/java/org/democraxssy/DemocraxssyBackendApplication.java`: clase principal de arranque de Spring Boot.
-  - `backend/src/main/java/org/democraxssy/salud/SaludController.java`: implementación de los métodos `HEAD` y `GET` para `/api/salud`.
+  - `backend/src/main/java/org/democraxssy/controllers/SaludController.java`: `HEAD /api/salud` (200; `GET` responde 405 porque el contrato solo define `HEAD`).
   - `backend/src/main/java/org/democraxssy/web/CorsFilter.java`: filtro de servlet con `@Order(Ordered.HIGHEST_PRECEDENCE)` y ejecución forzada en despachos de error (`shouldNotFilterErrorDispatch() = false`).
 - **Responsable:** José Andrés.
 
@@ -29,13 +29,16 @@
 - **Opciones evaluadas:**
   - **Opción A (Base de datos relacional PostgreSQL / MySQL o embebida H2/SQLite):** Pros: persistencia duradera de datos ante reinicios. Contras: sobrecarga innecesaria de I/O en disco, agrega otro proceso y uso de memoria en una VM de 1 GB y complejidad accidental en migraciones de esquema para datos que pierden valor una vez concluida la partida.
   - **Opción B (Base de datos en memoria externa como Redis):** Pros: alta velocidad y expiración nativa mediante TTL. Contras: introduce un proceso adicional de sistema operativo compitiendo por los escasos recursos de la VM micro y añade un punto extra de falla en la arquitectura.
-  - **Opción C (Estado puramente en memoria dentro del proceso de la JVM):** Pros: acceso en microsegundos, cero sobrecarga de red o I/O, control de concurrencia mediante estructuras de datos concurrentes (`ConcurrentHashMap`), recolección de basura automática y limpieza programada de partidas inactivas (funcionalidad planeada para evitar fugas de memoria en sesiones prolongadas). Contras: pérdida de partidas activas si el proceso se reinicia (escenario aceptable para un juego de salón efímero).
-- **Decisión:** Se eligió un **modelo de estado completamente en memoria** gestionado dentro de la JVM de Spring Boot, sin base de datos relacional, NoSQL ni almacenamiento secundario, complementado con una rutina de limpieza por inactividad planeada para su integración en el backend.
+  - **Opción C (Estado puramente en memoria dentro del proceso de la JVM):** Pros: acceso en microsegundos, cero sobrecarga de red o I/O, control de concurrencia mediante estructuras de datos concurrentes (`ConcurrentHashMap`), recolección de basura automática y limpieza programada de partidas inactivas para no acumular partidas abandonadas. Contras: pérdida de partidas activas si el proceso se reinicia (escenario aceptable para un juego de salón efímero).
+- **Decisión:** Se eligió un **modelo de estado completamente en memoria** gestionado dentro de la JVM de Spring Boot, sin base de datos relacional, NoSQL ni almacenamiento secundario, complementado con una **limpieza automática de partidas inactivas**: se borran las que pasan 30 minutos sin actividad, con un barrido cada 5 minutos. Ambos valores se ajustan sin recompilar (`juego.limpieza.timeout` y `juego.limpieza.intervalo`).
 - **Justificación:** Es la solución más eficiente para operar holgadamente dentro de los estrictos límites de la capa gratuita (Always Free) de OCI. Permite configurar la JVM con un heap máximo de 256 MB (`-Xmx256m`) y recolector serial (`-XX:+UseSerialGC`), garantizando que el servicio completo se mantenga por debajo del tope de memoria de 500 MB impuesto por cgroups en systemd, dejando suficiente RAM libre para el sistema operativo y el servidor web Nginx.
 - **Evidencia:**
   - `backend/pom.xml`: ausencia deliberada de dependencias como `spring-boot-starter-data-jpa`, Hibernate, JDBC o conectores SQL; descripción explícita: `"Backend del juego democraXSSy (Spring Boot, estado en memoria)"`.
   - `infra/cloud-init.yaml`: unidad de servicio `/etc/systemd/system/democraxssy-back.service` con directivas `ExecStart=/usr/bin/java -Xmx${jvm_max_heap} -Xss512k -XX:MaxMetaspaceSize=128m -XX:+UseSerialGC -jar ...` y `MemoryMax=500M`.
   - `openapi.yaml`: ciclo de vida transitorio de partidas (`POST /api/partidas` para instanciar y `DELETE /api/partidas/{id}` para descartar).
+  - `backend/src/main/java/org/democraxssy/repositorio/RepositorioEnMemoria.java`: las partidas viven en un `ConcurrentHashMap`; cada acceso renueva la marca de actividad.
+  - `backend/src/main/java/org/democraxssy/servicio/LimpiezaPartidas.java` (`@Scheduled`) y `backend/src/main/resources/application.properties` (`juego.limpieza.*`).
+  - `infra/evidencia/08-memoria.md`: en producción, con 50 partidas de 22 jugadores el servicio no pasó de 169 MB de 500, y a los 36 minutos el log registró `Limpieza: 56 partida(s) inactiva(s) eliminada(s)`. Con 100 partidas (2200 jugadores) no pasó de 187 MB.
 - **Responsable:** José Andrés.
 
 ---
@@ -45,20 +48,26 @@
 - **Contexto:** La especificación de la cátedra en `openapi.yaml` impone un mecanismo riguroso y no convencional de rechazo de solicitudes: cualquier petición que envíe parámetros de consulta (*query parameters*), cabeceras no autorizadas, formatos de token incorrectos, cabeceras de sobreescritura de método HTTP o cuerpos JSON con propiedades adicionales, desconocidas o repetidas debe responder inmediatamente con el código de estado **HTTP 409 (Conflict)** y un cuerpo JSON con el esquema `Error`, en lugar de los códigos estándar HTTP 400 o 422.
 - **Opciones evaluadas:**
   - **Opción A (Validación estándar permisiva de frameworks):** Frameworks como Spring MVC o Express ignoran por defecto parámetros de consulta no mapeados y descartan campos JSON desconocidos silenciosamente. Pros: comportamiento estándar en la web comercial. Contras: incumplimiento absoluto del contrato `openapi.yaml`, lo cual causaría la reprobación inmediata en las pruebas automatizadas de la cátedra.
-  - **Opción B (Validación estricta mediante filtros y configuración selectiva de Jackson):** Planificar la activación de `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` aplicada exclusivamente a los DTOs de entrada HTTP. Se descartó aplicarla de forma global en el `ObjectMapper`, ya que rompería la deserialización interna de `cartas.json` (cuyas cartas negras contienen el campo `id`, ausente en el record `CartaNegra` del dominio del backend). Asimismo, se reconoció técnicamente que `FAIL_ON_UNKNOWN_PROPERTIES` no detecta claves duplicadas en JSON (requiriendo `JsonParser.Feature.STRICT_DUPLICATE_DETECTION`). Pros: cumplimiento exacto del contrato formal sin romper la carga de mazos internos. Contras: requiere aislamiento de configuración entre DTOs externos y recursos internos.
-- **Decisión:** Diseñar e implementar **validación estricta integral orientada a HTTP 409** en el backend (planificada para la fase D de José Andrés) y diseñar el cliente frontend (`frontend/src/api/client.ts`) para adherirse minuciosamente a estas restricciones:
+  - **Opción B (Validación estricta mediante filtros y configuración selectiva de Jackson):** Activar `DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES` solo en el lector JSON de las solicitudes HTTP (mediante `JsonMapperBuilderCustomizer`), no en el `ObjectMapper` propio con el que se carga el mazo. Activarla para todo rompería la deserialización interna de `cartas.json` (cuyas cartas negras contienen el campo `id`, ausente en el record `CartaNegra` del dominio del backend). Asimismo, se reconoció técnicamente que `FAIL_ON_UNKNOWN_PROPERTIES` no detecta claves duplicadas en JSON (requiriendo `JsonParser.Feature.STRICT_DUPLICATE_DETECTION`). Pros: cumplimiento exacto del contrato formal sin romper la carga de mazos internos. Contras: requiere aislamiento de configuración entre DTOs externos y recursos internos.
+- **Decisión:** Implementar **validación estricta integral orientada a HTTP 409** en el backend y diseñar el cliente frontend (`frontend/src/api/client.ts`) para adherirse minuciosamente a estas restricciones:
   - Cero parámetros de consulta en la totalidad de las rutas de la API.
   - Cabecera `Authorization` restringida exclusivamente a la estructura `Bearer <token>` de 64 caracteres hexadecimales en minúscula (`^[0-9a-f]{64}$`), prohibida en endpoints públicos (`HEAD /api/salud`, `POST /api/partidas`, `POST /api/partidas/{id}/jugadores`).
   - Rechazo tajante de cabeceras de sobreescritura de método: `X-HTTP-Method-Override`, `X-HTTP-Method` y `X-Method-Override`.
   - Exigencia estricta de `Content-Type: application/json` únicamente cuando hay cuerpo; rechazo de cuerpo y de `Content-Type` en peticiones `HEAD`, `GET` y `DELETE`.
-  - Rechazo de propiedades desconocidas aplicado de forma aislada a los DTOs de entrada HTTP.
+  - Rechazo de cuerpos JSON mal formados, con campos desconocidos, sin campos obligatorios o con tipos incorrectos (por ejemplo, `"nombre": 5` o `"puntos_para_ganar": "5"`).
+  - Cuerpo vacío o `{}` obligatorio en `iniciar` y `avanzar`.
 - **Justificación:** Asegura la interoperabilidad exacta con los clientes evaluadores del curso IF-6000 y garantiza que el sistema respete la arquitectura de seguridad y diseño de protocolos exigida por la cátedra sin interferir con la infraestructura de mazos del backend.
 - **Evidencia:**
   - `openapi.yaml`: sección "Validación de solicitudes" (líneas 28-39) y definición del componente `#/components/responses/Conflicto`.
   - `frontend/src/api/client.ts`: función `aceptaAuth()` (líneas 42-48) para evitar inyectar `Authorization` en rutas públicas, y creación de instancia Axios limpia sin cabeceras por defecto en línea 83 (`const instance = axios.create()`).
   - `infra/cloud-init.yaml`: bloque de Nginx (líneas 68-73) que intencionalmente no añade directivas `proxy_set_header X-Forwarded-For` ni similares, para que Nginx no introduzca cabeceras adicionales que disparen el 409 en el backend.
-  - *Nota de implementación:* Cuando José Andrés integre la fase D del backend, se citará la clase de configuración de Jackson y filtros como evidencia de la implementación en código.
-- **Responsable:** José Andrés.
+  - `backend/src/main/java/org/democraxssy/web/ValidacionEntradaFilter.java`: parámetros de consulta en cualquier ruta, cabeceras de override de método y cuerpo o `Content-Type` en `GET`/`HEAD`/`DELETE` → 409.
+  - `backend/src/main/java/org/democraxssy/web/Autorizacion.java`: `Authorization` con formato `Bearer` + 64 hex, una sola vez y ausente en rutas públicas.
+  - `backend/src/main/java/org/democraxssy/config/JacksonConfig.java`: campos desconocidos, claves repetidas y coerción de tipos desactivada.
+  - `backend/src/main/java/org/democraxssy/web/ManejadorErrores.java`: cuerpo ilegible y `Content-Type` no admitido → 409, con el formato `{"error": ...}`; errores inesperados → 500 sin detalles internos.
+  - `backend/src/main/java/org/democraxssy/controllers/RondaController.java` (`exigirCuerpoVacio`) y `PartidasController.java` (`nombre` obligatorio).
+  - `infra/evidencia/07-pruebas-http-https.md`: prueba automatizada del contrato con **62/62** contra el `.jar` en local y **61/62** en producción por HTTPS, HTTP y proxy. El único caso que falla en producción, `Authorization` repetida, lo rechaza Nginx con su propio 400 antes de llegar al backend.
+- **Responsable:** José Andrés (con Joel en el manejo de errores y las pruebas del contrato).
 
 ---
 
@@ -230,5 +239,7 @@
 - **Justificación:** El contrato `openapi.yaml` prohíbe explícitamente campos repetidos en las solicitudes. Permitir claves duplicadas introduce vulnerabilidades de discrepancia semántica (*parser differential*), donde proxies, filtros WAF y aplicaciones pueden interpretar valores divergentes para un mismo campo. El rechazo estricto con 409 garantiza máxima solidez arquitectónica y adherencia total al contrato del curso.
 - **Evidencia:**
   - `openapi.yaml`: sección "Validación de solicitudes" (línea 37: *"El cuerpo JSON debe ser un objeto sin campos desconocidos ni repetidos, con todos los obligatorios y del tipo correcto"*).
-  - `tools/pruebas-contrato.mjs` (PR #15): caso de prueba automatizado que envía solicitudes con claves JSON duplicadas y valida la obtención obligatoria del código HTTP 409.
+  - `backend/src/main/java/org/democraxssy/config/JacksonConfig.java`: `StreamReadFeature.STRICT_DUPLICATE_DETECTION`.
+  - `backend/src/main/java/org/democraxssy/web/ManejadorErrores.java`: traduce el error de parseo a 409 e indica que la causa es una clave repetida.
+  - `tools/pruebas-contrato.mjs`: el caso `v-repetido` envía `{"nombre":"Ana","nombre":"Beto"}`. Nuestro backend responde 409; el servidor del profesor, 201 (`infra/evidencia/07-pruebas/`).
 - **Responsable:** José Andrés / Joel.
