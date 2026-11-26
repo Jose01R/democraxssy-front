@@ -3,6 +3,7 @@ package org.democraxssy.controllers;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -86,5 +87,39 @@ class RondaControllerTest {
     void sinTokenDa401() throws Exception {
         mvc.perform(post("/api/partidas/p1/avanzar"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // El contrato: iniciar y avanzar usan el requestBody "Vacio" (cuerpo vacio o {});
+    // cualquier campo se rechaza con 409.
+
+    @Test
+    void iniciarConCampoEnElCuerpoDa409() throws Exception {
+        mvc.perform(post("/api/partidas/p1/iniciar")
+                .header("Authorization", BEARER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"x\":1}"))
+                .andExpect(status().isConflict());
+        verifyNoInteractions(juego);
+    }
+
+    @Test
+    void avanzarConCampoEnElCuerpoDa409() throws Exception {
+        mvc.perform(post("/api/partidas/p1/avanzar")
+                .header("Authorization", BEARER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"x\":1}"))
+                .andExpect(status().isConflict());
+        verifyNoInteractions(juego);
+    }
+
+    @Test
+    void iniciarConObjetoVacioPasa() throws Exception {
+        when(juego.iniciar(eq("p1"), eq(TOKEN))).thenReturn(VISTA);
+        mvc.perform(post("/api/partidas/p1/iniciar")
+                .header("Authorization", BEARER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+                .andExpect(status().isOk());
+        verify(juego).iniciar("p1", TOKEN);
     }
 }
