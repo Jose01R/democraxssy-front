@@ -908,8 +908,10 @@ textarea {
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.3;
+  /* overflow-wrap parte una palabra solo si no cabe sola en la linea; sin separacion
+     automatica en silabas (hyphens: manual), que en una carta angosta cortaba casi todo. */
   overflow-wrap: break-word;
-  hyphens: auto;
+  hyphens: manual;
 }
 
 .carta-footer {
