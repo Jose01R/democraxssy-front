@@ -1,6 +1,5 @@
 # Source from https://registry.terraform.io/providers/oracle/oci/latest/docs/resources/core_instance
 
-# Imagen más reciente de Oracle Linux 9 compatible con la forma Always Free
 data "oci_core_images" "ol9" {
   compartment_id           = var.compartment_ocid
   operating_system         = "Oracle Linux"
@@ -23,7 +22,6 @@ resource "oci_core_instance" "backend_instance" {
   # Optional
   display_name = "democraxssy-back-e2"
   create_vnic_details {
-    # Sin IP efímera: se le asigna la IP reservada (public-ip.tf)
     assign_public_ip = false
     subnet_id        = var.subnet_ocid
     hostname_label   = "democraxssy-back"
@@ -43,13 +41,10 @@ resource "oci_core_instance" "backend_instance" {
   }
 
   lifecycle {
-    # Una imagen nueva de Oracle no debe recrear la VM.
-    # Un cambio en cloud-init.yaml sí la recrea (la IP reservada se conserva).
     ignore_changes = [source_details[0].source_id]
   }
 }
 
-# Imagen con la que se creo la VM (no la mas reciente: esa la ignora lifecycle)
 data "oci_core_image" "instance_image" {
   image_id = oci_core_instance.backend_instance.source_details[0].source_id
 }

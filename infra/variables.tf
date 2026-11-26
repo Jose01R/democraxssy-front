@@ -1,4 +1,3 @@
-# Autenticación (Lab #5, tutorial 1): valores del "Configuration file preview" de la API key
 variable "tenancy_ocid" {
   type = string
 }
@@ -21,7 +20,6 @@ variable "region" {
   default = "us-ashburn-1"
 }
 
-# Recursos existentes que se reutilizan
 variable "compartment_ocid" {
   description = "Compartimento IF6000-26-GUI"
   type        = string
@@ -37,7 +35,6 @@ variable "ad_index" {
   type        = number
 }
 
-# VM del backend
 variable "ssh_public_key_path" {
   type    = string
   default = "ssh-keys/democraxssy-back.pub"
