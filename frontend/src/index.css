@@ -150,11 +150,13 @@ textarea {
 
 .server-presets {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.5rem;
 }
 
 .server-preset {
+  width: 100%;
+  text-align: center;
   background-color: var(--bg-card-inner);
   border: 1px solid rgba(42, 34, 28, 0.15);
   border-radius: 6px;
