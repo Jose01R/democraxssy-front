@@ -1,0 +1,12 @@
+Despliegue del .jar final (main 90de7eb, 102 pruebas en verde), 25 nov 2026 22:48
+
+> powershell -ExecutionPolicy Bypass -File .\deploy.ps1 -Jar ..\backend\target\backend-0.0.1-SNAPSHOT.jar
+1/3 Subiendo ..\backend\target\backend-0.0.1-SNAPSHOT.jar (19.3 MB) a 157.151.151.205...
+2/3 Instalando y reiniciando el servicio...
+Backend arriba: HEAD /api/salud -> 200 (tras 20 s)
+Memoria del servicio: 144 MB
+3/3 Verificando desde Internet...
+  http://api-democraxssy-if6000.duckdns.org/api/salud     200
+  https://api-democraxssy-if6000.duckdns.org/api/salud    200
+Listo.
+

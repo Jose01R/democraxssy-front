@@ -3,16 +3,16 @@ Servidor: http://api-democraxssy-if6000.duckdns.org
 ----------------------------------------------------------------------------------------------------
 OK  200  (esperado 200 ) HEAD /api/salud
 OK  204  (esperado info) OPTIONS (preflight CORS)
-XX  200  (esperado 409 ) Parametro de consulta (?x=1)
-XX  200  (esperado 409 ) Authorization en /api/salud
+OK  409  (esperado 409 ) Parametro de consulta (?x=1)
+OK  409  (esperado 409 ) Authorization en /api/salud
 OK  409  (esperado 409 ) Authorization al crear partida
-XX  415  (esperado 409 ) Content-Type text/plain al crear
+OK  409  (esperado 409 ) Content-Type text/plain al crear
 OK  201  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
-XX  201  (esperado 409 ) X-HTTP-Method-Override
-XX  201  (esperado 409 ) JSON con campo desconocido
+OK  409  (esperado 409 ) X-HTTP-Method-Override
+OK  409  (esperado 409 ) JSON con campo desconocido
 OK  409  (esperado 409 ) JSON con clave repetida
-XX  400  (esperado 409 ) JSON sin el campo obligatorio
-XX  201  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
+OK  409  (esperado 409 ) JSON sin el campo obligatorio
+OK  409  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
 OK  409  (esperado 409 ) JSON que no es objeto ([])
 OK  409  (esperado 409 ) JSON mal formado
 OK  400  (esperado 400 ) Nombre solo con espacios
@@ -37,29 +37,32 @@ OK  401  (esperado 401 ) GET con token bien formado pero ajeno
 OK  409  (esperado 409 ) GET con token mal formado
 XX  400  (esperado 409 ) Authorization repetida
         - falta Access-Control-Allow-Origin: *
-XX  200  (esperado 409 ) GET con cuerpo y Content-Type
+OK  409  (esperado 409 ) GET con cuerpo y Content-Type
 OK  403  (esperado 403 ) Iniciar sin ser anfitrion
 OK  409  (esperado 409 ) Avanzar en fase sala
-XX  200  (esperado 409 ) Iniciar con campo en el cuerpo
-XX  409  (esperado 200 ) Iniciar (anfitrion, 4 jugadores)
-        - vista: falta "id"
-        - vista: falta "fase"
-        - vista: falta "anfitrion_id"
-        - vista: falta "puntos_para_ganar"
-        - vista: falta "jugadores"
-        - vista: falta "ronda"
-        - vista: falta "yo"
-        - vista: falta "historial"
-        - vista: falta "ganador_id"
-        - vista.id no es de 32 hex
-        - vista.fase invalida: undefined
-        - vista.anfitrion_id no es de 16 hex
-        - vista.puntos_para_ganar no es entero
-        - vista.jugadores no es arreglo
-        - vista.ronda: no es un objeto
-        - vista.yo: no es un objeto
-        - vista.historial no es arreglo
-        - fase undefined
-        - la mano no tiene 7 cartas
+OK  409  (esperado 409 ) Iniciar con campo en el cuerpo
+OK  200  (esperado 200 ) Iniciar (anfitrion, 4 jugadores)
+OK  409  (esperado 409 ) Unirse despues de iniciar
+OK  403  (esperado 403 ) El soberano intenta responder
+OK  400  (esperado 400 ) Responder con cantidad incorrecta de cartas
+OK  400  (esperado 400 ) Responder con carta que no esta en la mano
+OK  409  (esperado 409 ) Votar en fase respuestas
+OK  200  (esperado 200 ) Responder (jugador 1 de 3)
+OK  200  (esperado 200 ) Responder (jugador 2 de 3)
+OK  200  (esperado 200 ) Responder (jugador 3 de 3)
+OK  200  (esperado 200 ) Tras responder todos: fase votacion, respuestas anonimas
+OK  403  (esperado 403 ) El soberano intenta votar
+OK  404  (esperado 404 ) Votar por respuesta inexistente
+OK  200  (esperado 200 ) Votar (jugador 1)
+OK  409  (esperado 409 ) Votar dos veces
+OK  200  (esperado 200 ) Votar (jugador 2)
+OK  200  (esperado 200 ) Votar (jugador 3)
+OK  200  (esperado 200 ) Tras votar todos: fase decision, votos y favoritas
+OK  403  (esperado 403 ) Decidir sin ser soberano
+OK  200  (esperado 200 ) El soberano decide (1 punto: termina)
+OK  409  (esperado 409 ) Avanzar en partida terminada
+OK  403  (esperado 403 ) Eliminar sin ser anfitrion
+OK  204  (esperado 204 ) Eliminar partida terminada (anfitrion)
+OK  404  (esperado 404 ) GET de la partida eliminada
 ----------------------------------------------------------------------------------------------------
-29/40 casos correctos
+61/62 casos correctos

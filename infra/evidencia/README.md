@@ -10,8 +10,9 @@ Respaldo para `DECISIONES.md` y la defensa. Requisitos del enunciado que cubre: 
 | `04-cloud-init-diagnostico.md` | Un problema real (dnf saturaba la RAM), cómo se diagnosticó y cómo se corrigió en el código |
 | `05-estado-actual.txt` | Estado verificado: `terraform plan` sin cambios, HTTP y HTTPS, certificado, seguridad, memoria, puertos |
 | `06-despliegue-y-rollback.txt` | `deploy.ps1` funcionando y el rollback automático ante un `.jar` roto |
-| `07-pruebas-http-https.md` y `07-pruebas/` | Pruebas del contrato contra el servidor del profesor y el nuestro, por HTTPS, HTTP y HTTP vía el proxy del frontend |
-| `08-memoria.md` | Memoria con 100 partidas llenas abiertas (2200 jugadores): el servicio pasó de 177 a 187 MB, con tope de 500. Lo genera `tools/prueba-memoria.ps1` |
+| `07-pruebas-http-https.md` y `07-pruebas/` | Pruebas del contrato con el `.jar` final: 61/62 por HTTPS, HTTP y HTTP vía el proxy del frontend (el único fallo lo responde Nginx); partida completa por las tres vías |
+| `08-memoria.md` | Memoria con muchas partidas llenas abiertas (hasta 2200 jugadores): el servicio no pasó de 187 MB, con tope de 500; la limpieza de inactivas funciona en producción. Lo genera `tools/prueba-memoria.ps1` |
+| `09-despliegue-final.txt` | El despliegue del `.jar` final con `deploy.ps1`: arranque en 20 s, 144 MB y verificación por HTTP y HTTPS |
 | `capturas/` | Capturas de la consola de OCI, DuckDNS y el navegador (ver abajo) |
 
 ## Datos clave
