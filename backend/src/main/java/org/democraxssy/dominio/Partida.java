@@ -1,5 +1,6 @@
 package org.democraxssy.dominio;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,11 +20,21 @@ public class Partida {
     private Ronda ronda;
     private final List<ResultadoRonda> historial = new ArrayList<>();
     private String ganadorId;
+    /** Ultima vez que se toco la partida; la usa la limpieza de la Fase E. */
+    private volatile Instant ultimaActividad = Instant.now();
 
     public Partida(String id, String anfitrionId, int puntosParaGanar) {
         this.id = id;
         this.anfitrionId = anfitrionId;
         this.puntosParaGanar = puntosParaGanar;
+    }
+
+    public Instant ultimaActividad() {
+        return ultimaActividad;
+    }
+
+    public void ultimaActividad(Instant ultimaActividad) {
+        this.ultimaActividad = ultimaActividad;
     }
 
     public String id() {

@@ -13,13 +13,18 @@ import org.democraxssy.servicio.JuegoServicio;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Wiring del juego: carga el mazo desde {@code resources/mazos/cartas.json} al arrancar
  * (fallando rapido si es invalido) y expone {@link JuegoEnMemoria} como el bean
  * {@link JuegoServicio} que usan los controllers.
+ *
+ * <p>{@code @EnableScheduling} activa el barrido de limpieza de la Fase E
+ * ({@link org.democraxssy.servicio.LimpiezaPartidas}).
  */
 @Configuration
+@EnableScheduling
 public class JuegoConfig {
 
     @Bean
