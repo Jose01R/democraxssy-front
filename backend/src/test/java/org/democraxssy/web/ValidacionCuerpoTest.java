@@ -53,4 +53,14 @@ class ValidacionCuerpoTest {
         // puntos_para_ganar es opcional (el servicio usa 5 por defecto): no debe dar 409.
         enviar("{\"nombre\":\"Ana\"}", 201);
     }
+
+    @Test
+    void puntosComoTextoDa409() throws Exception {
+        enviar("{\"nombre\":\"Ana\",\"puntos_para_ganar\":\"5\"}", 409);
+    }
+
+    @Test
+    void puntosDecimalDa409() throws Exception {
+        enviar("{\"nombre\":\"Ana\",\"puntos_para_ganar\":5.5}", 409);
+    }
 }

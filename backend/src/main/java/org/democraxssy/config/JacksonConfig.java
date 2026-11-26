@@ -42,6 +42,12 @@ public class JacksonConfig {
                 cfg.setCoercion(CoercionInputShape.Float, CoercionAction.Fail);
                 cfg.setCoercion(CoercionInputShape.Boolean, CoercionAction.Fail);
             });
+            // Un entero no se acepta como texto ("5") ni como decimal (5.5). Cubre
+            // puntos_para_ganar y los elementos de cartas.
+            builder.withCoercionConfig(LogicalType.Integer, cfg -> {
+                cfg.setCoercion(CoercionInputShape.String, CoercionAction.Fail);
+                cfg.setCoercion(CoercionInputShape.Float, CoercionAction.Fail);
+            });
         };
     }
 }
