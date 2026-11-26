@@ -1,0 +1,3 @@
+# cloud-init se envia tal cual a la VM: con CRLF, Terraform veria otro user_data y recrearia la VM.
+infra/cloud-init.yaml text eol=lf
+*.sh text eol=lf
