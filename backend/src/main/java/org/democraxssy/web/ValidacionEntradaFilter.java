@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * Rechaza con 409 dos formas de solicitud inesperada que el contrato no admite:
  * <ul>
+ *   <li>parámetros de consulta en cualquier ruta (el contrato no los admite en ninguna);</li>
  *   <li>cabeceras de override de método ({@code X-HTTP-Method-Override} y similares), que
  *       intentan disfrazar el método real;</li>
  *   <li>{@code GET}, {@code HEAD} o {@code DELETE} que traen cuerpo o {@code Content-Type}
@@ -39,7 +40,7 @@ public class ValidacionEntradaFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest peticion, HttpServletResponse respuesta,
             FilterChain cadena) throws ServletException, IOException {
 
-        if (tieneOverride(peticion) || cuerpoNoPermitido(peticion)) {
+        if (peticion.getQueryString() != null || tieneOverride(peticion) || cuerpoNoPermitido(peticion)) {
             responder409(respuesta);
             return;
         }

@@ -62,6 +62,19 @@ class ValidacionEntradaFilterTest {
     }
 
     @Test
+    void parametroDeConsultaDa409() throws Exception {
+        MockHttpServletRequest peticion = new MockHttpServletRequest("GET", "/api/partidas/x");
+        peticion.setQueryString("x=1");
+        MockHttpServletResponse respuesta = new MockHttpServletResponse();
+        MockFilterChain cadena = new MockFilterChain();
+
+        correr(peticion, respuesta, cadena);
+
+        assertEquals(409, respuesta.getStatus());
+        assertNull(cadena.getRequest(), "ninguna ruta admite parametros de consulta");
+    }
+
+    @Test
     void getLimpioPasa() throws Exception {
         MockHttpServletRequest peticion = new MockHttpServletRequest("GET", "/api/partidas/x");
         MockHttpServletResponse respuesta = new MockHttpServletResponse();
