@@ -1,5 +1,7 @@
 package org.democraxssy.web;
 
+import java.util.Locale;
+
 import org.democraxssy.errores.ConflictoException;
 import org.democraxssy.errores.DatosInvalidosException;
 import org.democraxssy.errores.NoAutenticadoException;
@@ -11,16 +13,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Las excepciones propias de Spring MVC (metodo no soportado, Content-Type, JSON ilegible, ruta inexistente...)
- * las resuelve ResponseEntityExceptionHandler con su codigo estandar; aqui solo se cambia el cuerpo al formato
- * {"error": "..."}. Para mapear alguna a 409 se sobrescribe su metodo handleXxx. El handler de Exception es el
- * ultimo recurso: solo atrapa lo inesperado y responde 500 sin detalles.
+ * Las excepciones propias de Spring MVC (metodo no soportado, Content-Type, ruta inexistente...) las resuelve
+ * ResponseEntityExceptionHandler con su codigo estandar; aqui solo se cambia el cuerpo al formato {"error": "..."}.
+ * Para mapear alguna a 409 se sobrescribe su metodo handleXxx, como el del cuerpo JSON ilegible. El handler de
+ * Exception es el ultimo recurso: solo atrapa lo inesperado y responde 500 sin detalles.
  */
 @RestControllerAdvice
 public class ManejadorErrores extends ResponseEntityExceptionHandler {
@@ -56,6 +59,30 @@ public class ManejadorErrores extends ResponseEntityExceptionHandler {
     ResponseEntity<ErrorRespuesta> inesperado(Exception e) {
         log.error("Error no controlado", e);
         return responder(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno del servidor");
+    }
+
+    /** El contrato trata un cuerpo JSON mal formado o con claves repetidas como inesperado: 409. */
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException e, HttpHeaders cabeceras, HttpStatusCode estado, WebRequest peticion) {
+        String mensaje = esClaveRepetida(e)
+                ? "Cuerpo JSON invalido o inesperado: clave repetida."
+                : "Cuerpo JSON invalido o inesperado.";
+        return ResponseEntity.status(HttpStatus.CONFLICT).headers(cabeceras).body(new ErrorRespuesta(mensaje));
+    }
+
+    /**
+     * Jackson no tiene una excepcion propia para la deteccion estricta de duplicados: reporta un
+     * error de parseo cuyo mensaje contiene "Duplicate". Se recorre la cadena de causas buscandolo.
+     */
+    private static boolean esClaveRepetida(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            String mensaje = t.getMessage();
+            if (mensaje != null && mensaje.toLowerCase(Locale.ROOT).contains("duplicate")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

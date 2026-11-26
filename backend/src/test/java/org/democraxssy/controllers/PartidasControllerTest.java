@@ -111,9 +111,9 @@ class PartidasControllerTest {
     }
 
     @Test
-    void crearConJsonRotoDa400() throws Exception {
+    void crearConJsonRotoDa409() throws Exception {
         mvc.perform(post("/api/partidas").contentType(MediaType.APPLICATION_JSON).content("{\"nombre\":"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").exists());
     }
 
