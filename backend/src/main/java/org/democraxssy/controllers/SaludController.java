@@ -1,4 +1,4 @@
-package org.democraxssy.salud;
+package org.democraxssy.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
