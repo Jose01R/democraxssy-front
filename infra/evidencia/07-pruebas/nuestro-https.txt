@@ -5,27 +5,61 @@ OK  200  (esperado 200 ) HEAD /api/salud
 OK  204  (esperado info) OPTIONS (preflight CORS)
 XX  200  (esperado 409 ) Parametro de consulta (?x=1)
 XX  200  (esperado 409 ) Authorization en /api/salud
-XX  404  (esperado 409 ) Authorization al crear partida
-XX  404  (esperado 409 ) Content-Type text/plain al crear
-XX  404  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
-XX  404  (esperado 409 ) X-HTTP-Method-Override
-XX  404  (esperado 409 ) JSON con campo desconocido
-XX  404  (esperado 409 ) JSON con clave repetida
-XX  404  (esperado 409 ) JSON sin el campo obligatorio
-XX  404  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
-XX  404  (esperado 409 ) JSON que no es objeto ([])
-XX  404  (esperado 409 ) JSON mal formado
-XX  404  (esperado 400 ) Nombre solo con espacios
-XX  404  (esperado 400 ) Nombre de 25 caracteres
-XX  404  (esperado 400 ) Nombre con caracter de control
-XX  404  (esperado 400 ) puntos_para_ganar = 0
-XX  404  (esperado 400 ) puntos_para_ganar = 21
-XX  404  (esperado 201 ) puntos_para_ganar = null (usa 5)
-        - no quedo en 5
-XX  404  (esperado 413 ) Cuerpo de mas de 4 KB
+OK  409  (esperado 409 ) Authorization al crear partida
+XX  415  (esperado 409 ) Content-Type text/plain al crear
+OK  201  (esperado 201 ) Content-Type con ; charset=utf-8 (valido)
+XX  201  (esperado 409 ) X-HTTP-Method-Override
+XX  201  (esperado 409 ) JSON con campo desconocido
+OK  409  (esperado 409 ) JSON con clave repetida
+XX  400  (esperado 409 ) JSON sin el campo obligatorio
+XX  201  (esperado 409 ) JSON con tipo incorrecto (nombre: 5)
+OK  409  (esperado 409 ) JSON que no es objeto ([])
+OK  409  (esperado 409 ) JSON mal formado
+OK  400  (esperado 400 ) Nombre solo con espacios
+OK  400  (esperado 400 ) Nombre de 25 caracteres
+OK  400  (esperado 400 ) Nombre con caracter de control
+OK  400  (esperado 400 ) puntos_para_ganar = 0
+OK  400  (esperado 400 ) puntos_para_ganar = 21
+OK  201  (esperado 201 ) puntos_para_ganar = null (usa 5)
+OK  413  (esperado 413 ) Cuerpo de mas de 4 KB
 OK  404  (esperado 404 ) Ruta inexistente
 OK  404  (esperado 404 ) Partida inexistente (32 hex)
 OK  404  (esperado info) ID de partida mal formado (informativo)
-XX  404  (esperado 201 ) Crear partida (anfitrion)
+OK  201  (esperado 201 ) Crear partida (anfitrion)
+OK  201  (esperado 201 ) Unirse (Beto)
+OK  201  (esperado 201 ) Unirse (Caro)
+OK  201  (esperado 201 ) Unirse (Dani)
+OK  409  (esperado 409 ) Unirse con nombre repetido (mayusculas)
+OK  409  (esperado 409 ) Authorization al unirse
+OK  200  (esperado 200 ) GET sin token (vista publica, yo = null)
+OK  200  (esperado 200 ) GET con token (incluye yo)
+OK  401  (esperado 401 ) GET con token bien formado pero ajeno
+OK  409  (esperado 409 ) GET con token mal formado
+XX  400  (esperado 409 ) Authorization repetida
+        - falta Access-Control-Allow-Origin: *
+XX  200  (esperado 409 ) GET con cuerpo y Content-Type
+OK  403  (esperado 403 ) Iniciar sin ser anfitrion
+OK  409  (esperado 409 ) Avanzar en fase sala
+XX  200  (esperado 409 ) Iniciar con campo en el cuerpo
+XX  409  (esperado 200 ) Iniciar (anfitrion, 4 jugadores)
+        - vista: falta "id"
+        - vista: falta "fase"
+        - vista: falta "anfitrion_id"
+        - vista: falta "puntos_para_ganar"
+        - vista: falta "jugadores"
+        - vista: falta "ronda"
+        - vista: falta "yo"
+        - vista: falta "historial"
+        - vista: falta "ganador_id"
+        - vista.id no es de 32 hex
+        - vista.fase invalida: undefined
+        - vista.anfitrion_id no es de 16 hex
+        - vista.puntos_para_ganar no es entero
+        - vista.jugadores no es arreglo
+        - vista.ronda: no es un objeto
+        - vista.yo: no es un objeto
+        - vista.historial no es arreglo
+        - fase undefined
+        - la mano no tiene 7 cartas
 ----------------------------------------------------------------------------------------------------
-5/25 casos correctos
+29/40 casos correctos
