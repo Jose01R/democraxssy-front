@@ -1,5 +1,7 @@
 package org.democraxssy.web;
 
+import java.util.Locale;
+
 import org.democraxssy.errores.ConflictoException;
 import org.democraxssy.errores.DatosInvalidosException;
 import org.democraxssy.errores.NoAutenticadoException;
@@ -41,7 +43,26 @@ public class ManejadorErrores {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ErrorRespuesta> cuerpoIlegible(HttpMessageNotReadableException e) {
+        if (esClaveRepetida(e)) {
+            // El contrato clasifica un cuerpo JSON inesperado (claves repetidas) como Conflicto.
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new ErrorRespuesta("Cuerpo JSON invalido o inesperado: clave repetida."));
+        }
         return ResponseEntity.badRequest().body(new ErrorRespuesta("Cuerpo JSON invalido"));
+    }
+
+    /**
+     * Jackson no tiene una excepcion propia para la deteccion estricta de duplicados: reporta un
+     * error de parseo cuyo mensaje contiene "Duplicate". Recorremos la cadena de causas buscandolo.
+     */
+    private static boolean esClaveRepetida(Throwable e) {
+        for (Throwable t = e; t != null; t = t.getCause()) {
+            String mensaje = t.getMessage();
+            if (mensaje != null && mensaje.toLowerCase(Locale.ROOT).contains("duplicate")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static ResponseEntity<ErrorRespuesta> responder(HttpStatus estado, RuntimeException e) {
